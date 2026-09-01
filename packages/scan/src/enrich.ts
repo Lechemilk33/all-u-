@@ -52,15 +52,21 @@ export function regionOf(el: Element, pageUrl?: string): Region {
     if (tag === 'main' || role === 'main') sawMain = true;
   }
 
-  // The page's own URL disambiguates single-purpose pages whose markup is generic.
+  // Structural landmarks win over the URL hint. A navigation link is navigation
+  // wherever it appears, and a footer is a footer even on a checkout page —
+  // treating a whole page as "checkout" because of its path would inflate the
+  // score of every chrome element on it.
+  if (sawFooter) return 'footer';
+  if (sawNav) return 'navigation';
+
+  // Only now does the page's own URL disambiguate markup that is otherwise
+  // generic: a bare <div> wrapper on /checkout really is checkout content.
   if (pageUrl) {
-    if (CHECKOUT_RE.test(pageUrl)) return sawFooter ? 'footer' : 'checkout';
-    if (AUTH_RE.test(pageUrl)) return sawFooter ? 'footer' : 'auth';
+    if (CHECKOUT_RE.test(pageUrl)) return 'checkout';
+    if (AUTH_RE.test(pageUrl)) return 'auth';
   }
 
   if (sawForm && !SEARCH_RE.test(hintText(el))) return 'form';
-  if (sawFooter) return 'footer';
-  if (sawNav) return 'navigation';
   if (sawMain) return 'main';
   return 'unknown';
 }

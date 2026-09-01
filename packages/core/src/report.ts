@@ -81,11 +81,12 @@ function buildHeadline(exposure: Exposure, host: string): string {
     return `${host} has no automatically detectable WCAG 2.2 AA failures.`;
   }
   const n = verdict.failedCriteria.length;
+  const total = exposure.totalInstances;
   const blocking =
     blockingInstances > 0
-      ? ` ${blockingInstances} of them can stop a user completing a task.`
+      ? ` ${blockingInstances === total ? 'Every one of them' : `${blockingInstances} of them`} carries a failure that can stop a user completing a task.`
       : '';
-  return `${host} fails ${n} WCAG 2.2 Level AA success ${n === 1 ? 'criterion' : 'criteria'} across ${exposure.totalInstances} ${exposure.totalInstances === 1 ? 'element' : 'elements'}.${blocking}`;
+  return `${host} fails ${n} WCAG 2.2 Level AA success ${n === 1 ? 'criterion' : 'criteria'} across ${total} ${total === 1 ? 'element' : 'elements'}.${blocking}`;
 }
 
 function buildSummary(exposure: Exposure, regimes: readonly Regime[], deadlines: readonly UpcomingDeadline[]): string {
@@ -167,7 +168,11 @@ export function buildReport(input: ReportInput): Report {
 export function suggestRegimes(country?: string): RegimeId[] {
   switch ((country ?? 'US').toUpperCase()) {
     case 'US':
-      return ['ada-title-iii', 'ada-title-ii'];
+      return ['ada-title-iii'];
+    case 'US-PUBLIC':
+      return ['ada-title-ii', 'ada-title-iii'];
+    case 'US-FEDERAL':
+      return ['section-508'];
     case 'CA':
       return ['aoda', 'aca'];
     case 'GB':

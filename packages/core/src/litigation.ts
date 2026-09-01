@@ -154,6 +154,31 @@ export const RULE_TO_BENCHMARK: Readonly<Record<string, BenchmarkCategory>> = {
 };
 
 /**
+ * Rule-level phrasing that beats the criterion-level default.
+ *
+ * The weight always comes from the criterion. This only changes the sentence
+ * shown to a reader, for rules whose failure is narrower than the criterion
+ * that carries them — a nameless link and a nameless <select> both fail 4.1.2,
+ * and a reader is better served hearing about the one in front of them.
+ */
+export const RULE_ALLEGATION: Readonly<Record<string, string>> = {
+  'link-name': 'Links have no discernible text, so a screen reader user navigating by link list hears only "link" and cannot tell where any of them go.',
+  'button-name': 'Buttons have no accessible name and are announced only as "button" — commonly a modal close control, which leaves the user with no way out of the dialog.',
+  'input-button-name': 'Submit and reset buttons have no accessible name, so a user cannot tell what submitting the form will do.',
+  'select-name': 'A select control has no accessible name, so its options can be heard but the choice they represent cannot.',
+  'frame-title': 'An embedded frame has no title, so it is announced only as "frame". Where the frame is a payment field, checkout becomes opaque.',
+  'aria-input-field-name': 'A custom input — combobox, listbox, slider — has no accessible name, so the control is announced by its role alone.',
+  'image-alt': 'Images conveying information — product photos, icon-only controls, promotional banners — are announced as nothing, or as a filename, so a screen reader user cannot identify them.',
+  'input-image-alt': 'An image used as a submit button has no alternative text, so the action it performs cannot be determined before pressing it.',
+  'area-alt': 'Image map areas have no alternative text, making the regions of the image unnavigable.',
+  'html-has-lang': 'The page declares no language, so screen readers fall back to a default voice and may render the content unintelligibly.',
+  'label': 'Form fields are not programmatically associated with their labels, so a screen reader announces "edit, blank" and the user cannot tell what to enter.',
+  'document-title': 'The page has no title, so users cannot tell where they have landed or distinguish it in tabs and history.',
+  'bypass': 'There is no skip link and no landmark structure, forcing keyboard and screen reader users through the entire navigation before reaching content on every page.',
+  'meta-viewport': 'The viewport blocks zoom, so users who magnify text cannot enlarge the page on a mobile device.',
+};
+
+/**
  * Observed market rates, in USD, for what happens after a complaint lands.
  * Ranges, never point estimates — the report presents them as the market
  * numbers they are, attributed, and never as a prediction about this site.

@@ -7,7 +7,7 @@
  */
 
 import { criterionFromAxeTag, criterionByNumber, type ConformanceLevel, type SuccessCriterion } from './wcag.js';
-import { riskForCriteria, RULE_TO_BENCHMARK, type Blocking, type Salience, type BenchmarkCategory } from './litigation.js';
+import { riskForCriteria, RULE_TO_BENCHMARK, RULE_ALLEGATION, type Blocking, type Salience, type BenchmarkCategory } from './litigation.js';
 
 export type Impact = 'minor' | 'moderate' | 'serious' | 'critical';
 
@@ -125,6 +125,8 @@ export function toFinding(raw: RawRuleResult): Finding {
 
   const risk = riskForCriteria(criteria.map((c) => c.num));
   const benchmarkCategory = RULE_TO_BENCHMARK[raw.id];
+  // The criterion sets the weight; the rule may phrase the allegation better.
+  const allegation = RULE_ALLEGATION[raw.id] ?? risk.allegation;
 
   return {
     ruleId: raw.id,
@@ -136,7 +138,7 @@ export function toFinding(raw: RawRuleResult): Finding {
     level,
     salience: risk.salience,
     blocking: risk.blocking,
-    allegation: risk.allegation,
+    allegation,
     ...(benchmarkCategory ? { benchmarkCategory } : {}),
     bestPracticeOnly: criteria.length === 0,
     nodes: raw.nodes.map((n) => {

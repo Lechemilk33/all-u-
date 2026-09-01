@@ -1,0 +1,15 @@
+name = "curbcut-fetch"
+main = "src/index.ts"
+compatibility_date = "2026-01-15"
+
+# Free plan. 100,000 requests/day, no card required.
+# Deploy with:  npx wrangler deploy
+# The Worker holds no secrets and stores nothing.
+
+[observability]
+enabled = true
+
+[vars]
+# Comma-separated origins allowed to call this proxy. "*" allows any.
+# Set this to your own domain before going live so nobody else uses your quota.
+ALLOWED_ORIGINS = "*"

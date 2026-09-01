@@ -5,8 +5,12 @@
   "description": "Curbcut — see your website the way a plaintiff's lawyer does.",
   "license": "UNLICENSED",
   "type": "module",
-  "workspaces": ["packages/*"],
-  "engines": { "node": ">=20" },
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "npm run build -w @curbcut/core && npm run build -w @curbcut/scan && npm run content && npm run build -w @curbcut/web",
     "build:core": "npm run build -w @curbcut/core",
@@ -17,6 +21,7 @@
     "scan": "node packages/cli/bin/curbcut.mjs"
   },
   "devDependencies": {
+    "playwright": "^1.62.1",
     "typescript": "^5.7.3"
   }
 }

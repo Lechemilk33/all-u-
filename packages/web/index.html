@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curbcut — accessibility exposure scanning for the web</title>
+<meta name="description" content="Scan any page against WCAG 2.2 and ADA, EAA and Section 508 requirements. Findings are ranked by legal exposure, not error count, and the report says what it could not test. Free, no account.">
+<meta name="curbcut:proxy" content="https://curbcut-fetch.workers.dev">
+<link rel="canonical" href="https://curbcut.dev/">
+<meta property="og:title" content="Curbcut — see your site the way a plaintiff's lawyer does">
+<meta property="og:description" content="Accessibility findings ranked by legal exposure, mapped to the regime that applies to you, with the five findings a complaint would reproduce.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Curbcut",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Any",
+  "description": "Accessibility exposure scanner that ranks WCAG failures by legal risk and maps them to ADA, EAA, Section 508 and AODA requirements.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <svg class="brand-mark" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true" focusable="false">
+        <path d="M2 21h22v3H2z" fill="currentColor" opacity=".38"/>
+        <path d="M2 21V9h9l8 12H2z" fill="currentColor"/>
+      </svg>
+      Curbcut
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/deadlines/">Deadlines</a>
+      <a href="/law/">The law</a>
+      <a href="/fix/">Fix guides</a>
+      <a href="/wcag/">WCAG 2.2</a>
+      <a href="/method/">Method</a>
+    </nav>
+    <button type="button" id="theme-toggle" class="btn btn-secondary btn-small" aria-pressed="false">
+      Dark mode
+    </button>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<div id="stage-intro" class="stage" data-active="true">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Accessibility exposure scanning</p>
+      <h1>See your site the way a<br>plaintiff’s lawyer does.</h1>
+      <p class="lede">
+        Every scanner gives you an error count. An error count tells you nothing about
+        risk. Curbcut ranks what it finds by how often the criterion is actually pleaded,
+        whether the failure stops someone finishing a task, and where on the page it sits —
+        then shows you the five findings a complaint would reproduce.
+      </p>
+
+      <div class="hero-grid">
+       <div>
+      <form class="scan-form" id="scan-form" novalidate>
+        <div class="scan-row">
+          <label class="visually-hidden" for="scan-url">Website address to scan</label>
+          <input class="scan-input" id="scan-url" name="url" type="url" inputmode="url"
+                 autocomplete="url" spellcheck="false"
+                 placeholder="yourstore.com  ·  or a checkout URL" required>
+          <button class="btn" id="scan-submit" type="submit">Scan the page</button>
+        </div>
+        <p class="field-error" id="scan-error" role="alert" hidden></p>
+        <p class="form-hint">
+          <label for="jurisdiction">Grade against:</label>
+          <select id="jurisdiction" name="jurisdiction">
+            <option value="US">United States — private business (ADA Title III)</option>
+            <option value="US-PUBLIC">United States — government or school (ADA Title II)</option>
+            <option value="US-FEDERAL">United States — federal agency or vendor (Section 508)</option>
+            <option value="EU">European Union (EAA)</option>
+            <option value="GB">United Kingdom</option>
+            <option value="CA">Canada</option>
+          </select>
+        </p>
+        <p class="form-hint">
+          Free, no account, nothing stored. The scan runs in your browser — the page never
+          touches a Curbcut server except to be fetched.
+        </p>
+      </form>
+       </div>
+
+       <aside class="clock" id="deadline-clock" aria-labelledby="clock-h">
+         <h2 id="clock-h">Clocks that are running</h2>
+         <ol class="clock-list">
+           <li>
+             <span class="clock-days" data-deadline="2027-04-26">—</span>
+             <span class="clock-what">
+               <strong>ADA Title II</strong> — WCAG 2.1 AA required for US public entities
+               under 50,000 population, and every special district government.
+             </span>
+           </li>
+           <li>
+             <span class="clock-days clock-past" data-deadline="2026-04-24">—</span>
+             <span class="clock-what">
+               <strong>ADA Title II</strong> — the same requirement for public entities of
+               50,000 or more, and all transit authorities.
+             </span>
+           </li>
+           <li>
+             <span class="clock-days clock-past" data-deadline="2025-06-28">—</span>
+             <span class="clock-what">
+               <strong>European Accessibility Act</strong> — enforceable for anyone selling
+               to EU consumers, wherever they are established.
+             </span>
+           </li>
+         </ol>
+         <p class="form-hint"><a href="/deadlines/">Every deadline, and who each one covers →</a></p>
+       </aside>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <hr>
+
+    <section aria-labelledby="why-h">
+      <h2 id="why-h">Why the error count is the wrong number</h2>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>Not every failure gets pleaded</h3>
+          <p>
+            WCAG has 87 success criteria. A handful of them appear in nearly every demand
+            letter; most appear in none. Curbcut weights each finding by how often it is
+            actually named in accessibility complaints.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Position decides cost</h3>
+          <p>
+            An unlabelled field in a checkout form is the fact pattern that wins cases. The
+            same failure in a footer newsletter box is not. Curbcut reads where on the page
+            each failure sits and weights it accordingly.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Volume has diminishing returns</h3>
+          <p>
+            A hundred identical contrast errors from one bad palette token is one afternoon
+            of work, not a hundred times the risk. The model reflects that, so the ranking
+            stays useful instead of being dominated by whatever repeats most.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="honest-h">
+      <h2 id="honest-h">And what it cannot tell you</h2>
+      <div class="callout callout-warn">
+        <p>
+          <strong>No automated tool can establish that a site is accessible — including this one.</strong>
+          Automation decides roughly a third of the WCAG criteria. It can tell that an image
+          has alt text; it cannot tell whether the alt text is <em>right</em>. Every Curbcut
+          report states, in the same type size as the score, exactly which checks did not run
+          and why.
+        </p>
+        <p>
+          In 2025 the FTC fined an overlay vendor $1&nbsp;million for claiming its automated
+          product delivered compliance. Meanwhile 22.6% of web accessibility suits filed in the
+          first half of that year targeted sites that already had an overlay installed. A number
+          that flatters you is worth less than nothing here.
+        </p>
+      </div>
+    </section>
+
+    <section aria-labelledby="how-h">
+      <h2 id="how-h">How the scan works</h2>
+      <ol>
+        <li><strong>The page is fetched</strong> through a small proxy, because a browser cannot read another origin’s HTML.</li>
+        <li><strong>Every script is stripped</strong> — the page’s own JavaScript never runs.</li>
+        <li><strong>It is rendered with its real stylesheets</strong> in a sandboxed frame, so colour and size can actually be measured. Contrast is the most common failure on the web and it is invisible to any scanner that only reads markup.</li>
+        <li><strong>105 checks run</strong> against the laid-out page using axe-core, the same engine behind Lighthouse.</li>
+        <li><strong>Findings are mapped</strong> to success criteria, to the regime you selected, and to the exposure model.</li>
+      </ol>
+      <p>
+        For pages behind a login, or interfaces that only exist after JavaScript runs, use the
+        <a href="/bookmarklet/">bookmarklet</a> — it scans the page already open in front of you
+        and nothing leaves your machine.
+      </p>
+    </section>
+
+    <section aria-labelledby="who-h">
+      <h2 id="who-h">Who this is for</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Public entities under ADA Title II</h3>
+          <p>
+            The DOJ rule set a hard date. Entities serving 50,000 or more were required to
+            conform to WCAG 2.1 AA by 24 April 2026. Everyone else — smaller entities and every
+            special district government — has until 26 April 2027.
+          </p>
+          <p><a href="/deadlines/">See the countdown and what it applies to →</a></p>
+        </div>
+        <div class="card">
+          <h3>E-commerce under ADA Title III and the EAA</h3>
+          <p>
+            E-commerce drew about 70% of US web accessibility suits in 2025, and the European
+            Accessibility Act has been enforceable since 28 June 2025 for anyone selling to EU
+            consumers, wherever they are established.
+          </p>
+          <p><a href="/law/">Compare the regimes →</a></p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="stage-progress" class="stage" data-active="false">
+  <div class="wrap-narrow" style="padding-top:4rem">
+    <h1>Scanning…</h1>
+    <div class="progress">
+      <ol>
+        <li id="stage-fetch" data-state="active"><span class="progress-mark" aria-hidden="true">›</span> Fetching the page</li>
+        <li id="stage-render" data-state="todo"><span class="progress-mark" aria-hidden="true">·</span> Rendering it with its real stylesheets</li>
+        <li id="stage-audit" data-state="todo"><span class="progress-mark" aria-hidden="true">·</span> Running 105 accessibility checks</li>
+        <li id="stage-score" data-state="todo"><span class="progress-mark" aria-hidden="true">·</span> Mapping failures to law and scoring exposure</li>
+      </ol>
+    </div>
+    <p class="form-hint">The page’s own JavaScript is stripped before it renders. Nothing is stored.</p>
+  </div>
+</div>
+
+<div id="stage-report" class="stage" data-active="false">
+  <div class="wrap-narrow" style="padding-top:3rem">
+    <div id="report"></div>
+    <p class="no-print" style="margin-top:2.5rem">
+      <button type="button" class="btn btn-secondary" onclick="window.print()">Save as PDF</button>
+      <a class="btn btn-secondary" href="/" style="text-decoration:none">Scan another page</a>
+    </p>
+  </div>
+</div>
+
+<p id="scan-status" role="status" aria-live="polite" class="visually-hidden"></p>
+<iframe id="preview-frame" title="Rendering surface for the page being scanned" aria-hidden="true" tabindex="-1"></iframe>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h2>Scan</h2>
+        <ul>
+          <li><a href="/">Scan a page</a></li>
+          <li><a href="/bookmarklet/">Bookmarklet</a></li>
+          <li><a href="/method/">How the score works</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Reference</h2>
+        <ul>
+          <li><a href="/wcag/">WCAG 2.2 criteria</a></li>
+          <li><a href="/law/">Legal regimes</a></li>
+          <li><a href="/deadlines/">Deadlines</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Fix guides</h2>
+        <ul>
+          <li><a href="/fix/shopify/">Shopify</a></li>
+          <li><a href="/fix/wordpress/">WordPress</a></li>
+          <li><a href="/fix/react/">React and Next.js</a></li>
+          <li><a href="/fix/">All platforms</a></li>
+        </ul>
+      </div>
+    </div>
+    <hr>
+    <p>
+      Curbcut reports what an automated engine can detect and how those failures map to
+      published law. It is not legal advice and it is not a compliance certificate.
+      Testing is powered by <a href="https://github.com/dequelabs/axe-core" rel="noopener">axe-core</a>,
+      which is licensed MPL-2.0.
+    </p>
+  </div>
+</footer>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
