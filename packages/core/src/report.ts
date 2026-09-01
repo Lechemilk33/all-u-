@@ -6,7 +6,7 @@
  * the web app, the extension, the CLI and a PDF export without divergence.
  */
 
-import type { ConformanceLevel } from './wcag.js';
+import { criterionByNumber, criterionSlug, type ConformanceLevel } from './wcag.js';
 import { deadlinesFor, bindingStandard, regimeById, type Regime, type RegimeId, type UpcomingDeadline } from './regimes.js';
 import { buildExhibits, scoreExposure, BAND_LABEL, type Exhibit, type Exposure } from './score.js';
 import { describeCoverage, type Coverage, type RenderMode } from './coverage.js';
@@ -162,6 +162,12 @@ export function buildReport(input: ReportInput): Report {
     disclaimer: DISCLAIMER,
     ...(input.coverageWarning ? { coverageWarning: input.coverageWarning } : {}),
   };
+}
+
+/** Path of the reference page for a criterion number, or null if unknown. */
+export function criterionPath(num: string): string | null {
+  const sc = criterionByNumber(num);
+  return sc ? `/wcag/${criterionSlug(sc)}/` : null;
 }
 
 /** Regimes that plausibly apply, from a country hint. Never narrows silently. */

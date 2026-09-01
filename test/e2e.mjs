@@ -51,7 +51,8 @@ const server = createServer(async (req, res) => {
   }
 
   let file = url.pathname === '/' ? '/index.html' : url.pathname;
-  if (!extname(file)) file = `${file.replace(/\/$/, '')}/index.html`;
+  if (file.endsWith('/')) file += 'index.html';
+  else if (!extname(file)) file += '/index.html';
   try {
     let body = await readFile(join(ROOT, file));
     if (file.endsWith('.html')) {

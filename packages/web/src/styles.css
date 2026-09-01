@@ -429,3 +429,36 @@ select {
 
 details.card > summary { cursor: pointer; }
 details.card > summary::marker { color: var(--ink-3); }
+
+/* ---------- generated reference pages ---------- */
+
+.crumbs ol {
+  list-style: none; margin: 0 0 1.5rem; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  font-size: 0.86rem; color: var(--ink-3);
+}
+.crumbs li + li::before { content: '/'; margin-right: 0.4rem; color: var(--rule-strong); }
+.crumbs a { color: var(--ink-3); }
+
+.cta {
+  margin-top: 4rem; padding: 1.6rem 1.75rem;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--paper-2);
+}
+.cta h2 { font-size: 1.15rem; margin-bottom: 0.4rem; }
+.cta p { font-size: 0.94rem; color: var(--ink-2); }
+.cta .scan-row { margin-top: 1rem; }
+
+.index-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; }
+.index-list li { display: grid; grid-template-columns: 4.6rem 1fr auto; gap: 0.9rem; align-items: baseline;
+  padding: 0.5rem 0; border-bottom: 1px solid var(--rule); }
+.index-list li > :last-child { justify-self: end; }
+.index-num { font-family: var(--mono); font-size: 0.84rem; color: var(--ink-3); }
+.index-list a { text-decoration: none; font-weight: 540; }
+.index-list a:hover { text-decoration: underline; }
+
+.meta-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1.75rem; }
+
+.risk-bar { display: inline-flex; gap: 3px; vertical-align: middle; }
+.risk-bar span { width: 9px; height: 15px; border-radius: 2px; background: var(--rule); }
+.risk-bar span[data-on='true'] { background: currentColor; }

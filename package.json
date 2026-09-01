@@ -2,7 +2,7 @@
   "name": "curbcut",
   "private": true,
   "version": "0.1.0",
-  "description": "Curbcut — see your website the way a plaintiff's lawyer does.",
+  "description": "Curbcut \u2014 see your website the way a plaintiff's lawyer does.",
   "license": "UNLICENSED",
   "type": "module",
   "workspaces": [
@@ -12,13 +12,14 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "npm run build -w @curbcut/core && npm run build -w @curbcut/scan && npm run content && npm run build -w @curbcut/web",
+    "build": "npm run build:core && npm run build -w @curbcut/scan && npm run content && npm run build:audit && npm run build -w @curbcut/web && node scripts/finalize-build.mjs",
     "build:core": "npm run build -w @curbcut/core",
-    "content": "node scripts/generate-content.mjs",
+    "content": "node scripts/generate-content.mjs && node scripts/build-bookmarklet.mjs",
     "dev": "npm run dev -w @curbcut/web",
     "test": "node --test packages/core/test/*.test.mjs",
     "typecheck": "tsc -b --pretty packages/core packages/scan",
-    "scan": "node packages/cli/bin/curbcut.mjs"
+    "scan": "node packages/cli/bin/curbcut.mjs",
+    "build:audit": "vite build -c packages/web/vite.audit.config.ts"
   },
   "devDependencies": {
     "playwright": "^1.62.1",

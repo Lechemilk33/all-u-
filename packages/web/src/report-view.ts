@@ -8,6 +8,7 @@
 import {
   BAND_LABEL,
   REGION_LABEL,
+  criterionPath,
   type Exhibit,
   type Report,
   type RemediationItem,
@@ -90,7 +91,7 @@ function exhibitCard(e: Exhibit): string {
   <div class="exhibit-body">
     <p>${esc(e.why)}</p>
     <p class="visually-hidden">Failing markup:</p>
-    <pre class="evidence"><code>${esc(e.node.html)}</code></pre>
+    <pre class="evidence" tabindex="0" role="region" aria-label="Failing markup"><code>${esc(e.node.html)}</code></pre>
     ${e.node.reason ? `<p><strong>Why it fails:</strong> ${esc(e.node.reason)}</p>` : ''}
     <div class="exhibit-meta">
       <span><strong>Where:</strong> ${esc(REGION_LABEL[e.node.region])}</span>
@@ -129,8 +130,8 @@ function remediationRow(item: RemediationItem): string {
     ${steps}
     ${
       item.recipe?.wrong && item.recipe?.right
-        ? `<h4>Before</h4><pre><code>${esc(item.recipe.wrong)}</code></pre>
-           <h4>After</h4><pre><code>${esc(item.recipe.right)}</code></pre>`
+        ? `<h4>Before</h4><pre tabindex="0"><code>${esc(item.recipe.wrong)}</code></pre>
+           <h4>After</h4><pre tabindex="0"><code>${esc(item.recipe.right)}</code></pre>`
         : ''
     }
     ${
@@ -178,7 +179,10 @@ ${
     ${
       exposure.verdict.failedCriteria.length
         ? `<p class="form-hint">Failing criteria: ${exposure.verdict.failedCriteria
-            .map((c) => `<a href="/wcag/${esc(c)}/">${esc(c)}</a>`)
+            .map((c) => {
+              const href = criterionPath(c);
+              return href ? `<a href="${esc(href)}">${esc(c)}</a>` : esc(c);
+            })
             .join(', ')}</p>`
         : ''
     }
@@ -242,7 +246,7 @@ ${
 
 <section aria-labelledby="law-h">
   <h2 id="law-h">The law applied</h2>
-  <div class="table-scroll">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Regimes applied, scrollable">
   <table>
     <caption>Regimes selected for this report, with the standard each requires.</caption>
     <thead><tr><th scope="col">Regime</th><th scope="col">Applies to</th><th scope="col">Standard</th><th scope="col">How a claim starts</th></tr></thead>
@@ -269,7 +273,7 @@ ${
     Published rates for what happens on either side of a complaint. These are market figures,
     not a prediction about this site, and Curbcut does not estimate the odds that anyone will act.
   </p>
-  <div class="table-scroll">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Market rates, scrollable">
   <table>
     <thead><tr><th scope="col">Item</th><th scope="col">Reported range</th></tr></thead>
     <tbody>

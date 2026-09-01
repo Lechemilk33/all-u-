@@ -165,6 +165,24 @@ export const SUCCESS_CRITERIA: readonly SuccessCriterion[] = TABLE.split('\n').m
 });
 
 const BY_NUM = new Map(SUCCESS_CRITERIA.map((sc) => [sc.num, sc]));
+/**
+ * URL slug for a criterion: "1.4.3" -> "1-4-3-contrast-minimum".
+ *
+ * Dots are deliberately avoided. Several static hosts treat a path segment
+ * containing a dot as a file rather than a directory, which breaks
+ * /wcag/1.4.3/ in ways that only show up in production. The criterion name is
+ * carried along because the slug is also the URL a search engine indexes.
+ */
+export const criterionSlug = (sc: SuccessCriterion): string =>
+  `${sc.num.replace(/\./g, '-')}-${slug(sc.name)}`;
+
+/** Reverse of `criterionSlug`, tolerant of the number alone. */
+export function criterionFromSlug(value: string): SuccessCriterion | undefined {
+  const digits = /^(\d)-(\d)-(\d{1,2})/.exec(value);
+  if (!digits) return undefined;
+  return BY_NUM.get(`${digits[1]}.${digits[2]}.${digits[3]}`);
+}
+
 const BY_TAG = new Map(SUCCESS_CRITERIA.map((sc) => [sc.tag, sc]));
 
 export const criterionByNumber = (num: string): SuccessCriterion | undefined => BY_NUM.get(num);
