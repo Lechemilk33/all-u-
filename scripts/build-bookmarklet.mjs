@@ -11,7 +11,17 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PUBLIC = join(HERE, '..', 'packages', 'web', 'public');
-const ORIGIN = process.env.CURBCUT_ORIGIN ?? 'https://curbcut.dev';
+/**
+ * The bookmarklet is a permanent link in someone's browser, so it must point at
+ * a stable origin. On Vercel that is the project's production URL, which the
+ * build environment provides; override it with CURBCUT_ORIGIN for a custom
+ * domain or a Cloudflare deployment.
+ */
+const ORIGIN =
+  process.env.CURBCUT_ORIGIN ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://curbcut.dev');
 
 const loader = `(function(){
   var d=document, id='curbcut-audit-loader';

@@ -38,13 +38,11 @@ export class ScanError extends Error {
   }
 }
 
-/**
- * Builds the proxy request URL. `URL` rather than string concatenation, so a
- * proxy deployed on a subpath (`https://example.com/api/fetch`) works the same
- * as one on its own hostname.
- */
+/** Builds the proxy request URL. */
 function proxyRequestUrl(target: string): string {
-  const base = new URL(PROXY_URL);
+  // Resolved against the page so a same-origin default ("/api/fetch") works as
+  // well as an absolute one, and so a proxy on a subpath is not mangled.
+  const base = new URL(PROXY_URL, window.location.origin);
   base.searchParams.set('url', target);
   return base.toString();
 }

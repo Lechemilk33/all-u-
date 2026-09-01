@@ -9,8 +9,13 @@
 const fromMeta = (name: string): string | undefined =>
   document.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)?.content || undefined;
 
-export const PROXY_URL: string =
-  fromMeta('curbcut:proxy') ?? 'https://curbcut-fetch.workers.dev';
+/**
+ * Where the fetch proxy lives. The default is same-origin — Vercel serves it
+ * from /api/fetch — so a stock deployment needs no CORS and no second service.
+ * Override it with <meta name="curbcut:proxy"> to point at a Cloudflare Worker
+ * or any other host running packages/worker.
+ */
+export const PROXY_URL: string = fromMeta('curbcut:proxy') ?? '/api/fetch';
 
 export const SITE_NAME = 'Curbcut';
 export const SITE_TAGLINE = 'See your site the way a plaintiff’s lawyer does.';

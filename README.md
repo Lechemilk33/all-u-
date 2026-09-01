@@ -121,33 +121,18 @@ Index, so a scanned list sorts itself worst-first.
 
 ## Deploying
 
-Two pieces, both on free tiers. See `RUNBOOK.md` for the full walkthrough.
-
-**1. The Worker** (the only server-side component):
-
-```bash
-cd packages/worker
-npx wrangler deploy
-```
-
-Cloudflare Workers' free plan allows 100,000 requests a day and needs no card.
-The Worker holds no secrets and stores nothing. Set `ALLOWED_ORIGINS` in
-`wrangler.toml` to your own domain before going live so nobody else uses your
-quota.
-
-**2. The site** — any static host. Cloudflare Pages or Vercel:
+One Vercel project. The static site and the fetch proxy ship together — the
+proxy is an Edge Function at `/api/fetch`, same origin as the site, so there is
+no CORS to configure and no second service.
 
 - Build command: `npm run build`
 - Output directory: `packages/web/dist`
+- The `api/` directory is picked up automatically.
 
-Then point the site at your Worker by editing one line in
-`packages/web/index.html`:
-
-```html
-<meta name="curbcut:proxy" content="https://YOUR-WORKER.workers.dev">
-```
-
----
+Everything runs on the free Hobby plan. `packages/worker` is the same proxy
+packaged as a Cloudflare Worker if you prefer that; both import the identical
+implementation, so there is one copy of the SSRF guarding to keep correct. See
+`RUNBOOK.md`.
 
 ## Data and sources
 

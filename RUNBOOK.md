@@ -5,63 +5,50 @@ make money. Read the last section first if you only read one.
 
 ---
 
-## 1. Get it live (about 30 minutes, $0)
+## 1. It is live
 
-### The Worker
+Deployed on Vercel's free Hobby plan as a single project. The static site and
+the fetch proxy ship together — the proxy is a Vercel Edge Function at
+`/api/fetch`, same origin as the site, so there is no CORS to configure and no
+second service to keep in sync.
+
+The project is linked to this GitHub repository, so **every push to the default
+branch redeploys automatically**. Nothing else to run.
+
+### Costs
+
+**Nothing.** The Hobby plan covers static hosting and edge function invocations
+at this scale, the scan itself runs in the visitor's browser, and there are no
+AI calls anywhere in the product. The only optional expense is a custom domain
+(roughly $10–15/year) — get one when there is traffic worth branding.
+
+### If you would rather run the proxy on Cloudflare
+
+`packages/worker` is the same proxy as a Cloudflare Worker (free plan: 100,000
+requests/day). The implementation is shared with the Vercel function, so there
+is one copy of the SSRF guarding to keep correct.
 
 ```bash
 cd packages/worker
-npx wrangler login          # opens a browser, free account, no card
+npx wrangler login
 npx wrangler deploy
 ```
 
-Wrangler prints a URL like `https://curbcut-fetch.<subdomain>.workers.dev`.
-Free plan: 100,000 requests a day. Each scan is one request, so that is 100,000
-scans a day before anything costs anything.
-
-Once the site has a domain, restrict the Worker to it — otherwise anyone can
-point their own tool at your quota:
-
-```toml
-# packages/worker/wrangler.toml
-ALLOWED_ORIGINS = "https://curbcut.pages.dev,https://yourdomain.com"
-```
-
-then `npx wrangler deploy` again.
-
-### The site
-
-Push this branch, then in the Cloudflare dashboard: **Workers & Pages → Create →
-Pages → Connect to Git**, pick the repo, and set:
-
-- Build command: `npm run build`
-- Output directory: `packages/web/dist`
-
-You get `curbcut.pages.dev` free, forever, with TLS. Vercel works identically
-(`vercel.json` is already here) and gives you `*.vercel.app`.
-
-### Connect them
-
-One line in `packages/web/index.html`:
+Then point the site at it by editing one line in `packages/web/index.html`:
 
 ```html
 <meta name="curbcut:proxy" content="https://curbcut-fetch.YOURNAME.workers.dev">
 ```
 
-Also update `ORIGIN` in `scripts/build-bookmarklet.mjs`, or set
-`CURBCUT_ORIGIN` in the build environment, so the bookmarklet points at your
-deployment rather than `curbcut.dev`.
+and set `ALLOWED_ORIGINS` in `wrangler.toml` to your own domain, so nobody else
+uses your quota.
 
-Commit, push, done. Scan something and confirm the report renders.
+### The bookmarklet
 
-### What is not free
-
-**Nothing, until you want a custom domain.** `curbcut.pages.dev` costs nothing
-and works permanently. A `.com` is roughly $10–15/year at cost through
-Cloudflare Registrar. That is the only expense anywhere in this project, and it
-is optional — get it once there is traffic worth branding, not before.
-
----
+The bookmarklet is a permanent link in someone's browser, so it points at a
+fixed origin. The build reads `VERCEL_PROJECT_PRODUCTION_URL` automatically;
+once you add a custom domain, set `CURBCUT_ORIGIN` in the Vercel project's
+environment variables so installed bookmarklets follow it.
 
 ## 2. Verify before you promote
 
