@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.DS_Store
+*.tsbuildinfo
+.wrangler/
+.vercel/
+packages/web/public/vendor/
+packages/extension/vendor/
+packages/extension/*.zip
+.env
+.env.*
+!.env.example

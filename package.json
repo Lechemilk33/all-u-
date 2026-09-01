@@ -1,0 +1,22 @@
+{
+  "name": "curbcut",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Curbcut — see your website the way a plaintiff's lawyer does.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "npm run build -w @curbcut/core && npm run build -w @curbcut/scan && npm run content && npm run build -w @curbcut/web",
+    "build:core": "npm run build -w @curbcut/core",
+    "content": "node scripts/generate-content.mjs",
+    "dev": "npm run dev -w @curbcut/web",
+    "test": "node --test packages/core/test/*.test.mjs",
+    "typecheck": "tsc -b --pretty packages/core packages/scan",
+    "scan": "node packages/cli/bin/curbcut.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
