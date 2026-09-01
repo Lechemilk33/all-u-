@@ -665,27 +665,27 @@ async function methodPage() {
 
 <h2>The four factors</h2>
 <div class="table-scroll"><table>
-  <caption>Each finding's weight is the product of these.</caption>
-  <thead><tr><th scope="col">Factor</th><th scope="col">Range</th><th scope="col">What it captures</th></tr></thead>
+  <caption>Every finding is weighted by all four.</caption>
+  <thead><tr><th scope="col">Factor</th><th scope="col">What it captures</th></tr></thead>
   <tbody>
-    <tr><th scope="row">Litigation salience</th><td>0–5</td>
-      <td>How often the criterion is actually named in complaints and demand letters. 1.1.1 leads; most criteria are never pleaded at all.</td></tr>
-    <tr><th scope="row">Blocking severity</th><td>1–3</td>
+    <tr><th scope="row">Litigation salience</th>
+      <td>How often the criterion is actually named in complaints and demand letters. A handful lead almost every complaint — missing alternative text above all. Most are never pleaded at all.</td></tr>
+    <tr><th scope="row">Blocking severity</th>
       <td>Whether the failure stops a user finishing a task, merely impairs use, or degrades the experience. This is the fact pattern that decides cases.</td></tr>
-    <tr><th scope="row">Page region</th><td>0.6–2.0</td>
-      <td>Where the failing element sits. Checkout is weighted 2.0, sign-in 1.8, a form 1.5, navigation 1.3, main content 1.0, footer 0.6.</td></tr>
-    <tr><th scope="row">Volume</th><td>1 + ln(n)</td>
-      <td>How many elements fail, with diminishing returns. A hundred identical contrast errors from one bad token is one afternoon of work, not a hundred times the risk.</td></tr>
+    <tr><th scope="row">Page region</th>
+      <td>Where the failing element sits. Checkout carries the most weight, then sign-in, then any other form, then navigation and body content. A footer carries the least.</td></tr>
+    <tr><th scope="row">Volume</th>
+      <td>How many elements fail, with sharply diminishing returns. A hundred identical contrast errors from one bad colour token is one afternoon of work, not a hundred times the risk.</td></tr>
   </tbody>
 </table></div>
 
 <p>
-  The weighted total passes through a saturating curve, so the index stays inside 0–100 and the
-  gap between a bad site and a catastrophic one does not swamp the gap between a clean site and
-  a bad one. The curve is calibrated so a page carrying the median failure profile from the
+  The weighted total is mapped onto 0–100 through a curve that flattens at the top, so the gap
+  between a bad site and a catastrophic one does not swamp the gap between a clean site and a
+  bad one. It is calibrated against the median failure profile in the
   <a href="${BENCHMARK_2026.url}" rel="noopener">${esc(BENCHMARK_2026.label)}</a> — about
-  ${BENCHMARK_2026.meanErrorsPerPage} errors, mostly contrast and missing alt text — lands in
-  the mid-50s. There is a test in the repository that pins that calibration.
+  ${BENCHMARK_2026.meanErrorsPerPage} errors per page, mostly contrast and missing alt text —
+  which lands in the mid-50s. That is the reference point for every score you see.
 </p>
 
 <h2>What the index is not</h2>
@@ -719,17 +719,16 @@ async function methodPage() {
   How the page is obtained changes what can be tested, so the mode travels with the result:
 </p>
 ${list([
-  '<strong>Static HTML</strong> — the markup the server sent, not laid out. Colour and size cannot be computed, so contrast is not tested. This mode covers 18 of the 55 Level AA criteria.',
-  '<strong>Rendered HTML</strong> — served markup with real stylesheets and layout applied, with the page&rsquo;s own scripts stripped. This is what the web scanner does, and it covers 23 of 55.',
-  '<strong>Live page</strong> — the fully scripted page as a visitor receives it, including menus, modals and anything built at runtime. This is what the bookmarklet does.',
+  '<strong>Static HTML</strong> — the markup a server sent, with no layout. Colour and size cannot be computed at all, so contrast is not tested. Any tool reporting a clean contrast result from markup alone has not tested it.',
+  '<strong>Rendered HTML</strong> — the same markup with its real stylesheets and layout applied. Contrast becomes measurable. Anything the page&rsquo;s own scripts would have built is still missing.',
+  '<strong>Live page</strong> — the page exactly as a visitor receives it, including menus, modals, cart drawers and validation messages. This is what the extension and the bookmarklet test, and it is the only complete picture.',
 ])}
 
-<h2>What it costs to run</h2>
+<h2>Where your data goes</h2>
 <p>
-  Nothing, and that is a design constraint rather than a promotion. The scan executes in your
-  browser. The only server involved is a small proxy that fetches the page, because a browser
-  cannot read another origin&rsquo;s HTML — it stores nothing and runs inside a free tier. There
-  is no account, no queue, and no per-scan cost to anyone.
+  Nowhere. The analysis runs inside your own browser: the page is never uploaded, the results
+  are never stored, and there is no account to create. With the extension or the bookmarklet,
+  no part of the page you are auditing leaves your machine at all.
 </p>
 
 <h2>Sources</h2>
@@ -777,9 +776,7 @@ async function extensionPage() {
     <li>Open any page and click the Curbcut icon, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>.</li>
   </ol>
   <p class="form-hint">
-    Works in Chrome, Edge, Brave, Arc and any other Chromium browser. Publishing to
-    the Chrome Web Store removes the Developer-mode step; the store charges a
-    one-off $5 registration fee.
+    Works in Chrome, Edge, Brave, Arc and any other Chromium browser.
   </p>
 </div>
 

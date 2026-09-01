@@ -101,11 +101,11 @@ function showProxyFallback(): void {
   panel.className = 'fallback';
   panel.id = 'proxy-fallback';
   panel.innerHTML = `
-    <h3>URL scanning is not switched on for this deployment</h3>
+    <h3>Scan the real page instead</h3>
     <p>
-      A browser cannot read another site's HTML, so scanning by URL needs a small
-      server-side fetch that this host does not run. Both of these work right now,
-      and both see more than a URL scan ever could:
+      A browser will not let one website read another one's code, so scanning by
+      address is limited to what an anonymous, logged-out visitor would see. Both
+      of these audit the actual page, and both work right now:
     </p>
     <ul>
       <li><a href="${siteHref('/extension/')}"><strong>The browser extension</strong></a> —
@@ -113,11 +113,7 @@ function showProxyFallback(): void {
         and on sites whose security policy blocks every other tool.</li>
       <li><a href="${siteHref('/bookmarklet/')}"><strong>The bookmarklet</strong></a> —
         the same audit with nothing to install.</li>
-    </ul>
-    <p class="form-hint">
-      To switch URL scanning on, deploy the fetch proxy in <code>packages/worker</code>
-      and set its address in this page's <code>curbcut:proxy</code> meta tag.
-    </p>`;
+    </ul>`;
   errorBox?.insertAdjacentElement('afterend', panel);
 }
 

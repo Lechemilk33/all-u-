@@ -43,6 +43,18 @@ Then point the site at it by editing one line in `packages/web/index.html`:
 and set `ALLOWED_ORIGINS` in `wrangler.toml` to your own domain, so nobody else
 uses your quota.
 
+### Publishing the extension
+
+The extension currently installs with Chrome's "Load unpacked", which needs
+Developer mode switched on — fine for you and for anyone technical, a real drop-off
+for everyone else. Listing it on the Chrome Web Store removes that step entirely.
+
+The store charges a **one-off $5 developer registration fee** and reviews new
+listings, typically within a few days. That fee and a domain are the only two
+things in this whole project that cost money, and neither is needed to start.
+
+`npm run package -w @curbcut/extension` produces the zip the store wants.
+
 ### The bookmarklet
 
 The bookmarklet is a permanent link in someone's browser, so it points at a
