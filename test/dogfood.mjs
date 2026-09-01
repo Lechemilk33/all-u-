@@ -66,11 +66,27 @@ for (const [path, label] of PAGES) {
       })),
     })));
 
+  // WCAG 1.4.10 Reflow: no page may scroll horizontally at 320 CSS pixels.
+  // axe cannot decide this, and we shipped a 500px-wide landing page once.
+  await page.setViewportSize({ width: 320, height: 800 });
+  const reflow = await page.evaluate(() => {
+    const vw = document.documentElement.clientWidth;
+    const offenders = [];
+    for (const el of document.querySelectorAll('body *')) {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.right > vw + 1 && getComputedStyle(el).overflowX !== 'auto') {
+        offenders.push(`${el.tagName.toLowerCase()}.${String(el.className).slice(0, 24)} → ${Math.round(rect.right)}px`);
+      }
+    }
+    return { vw, scrollW: document.documentElement.scrollWidth, offenders: offenders.slice(0, 3) };
+  });
+
   // Best-practice rules are reported but do not fail the build; only real
   // WCAG failures do, which is the same standard applied to scanned sites.
   const wcagFails = r.violations.filter((v) => v.wcag);
   totalViolations += wcagFails.length;
-  rows.push({ path, label, wcag: wcagFails, advisory: r.violations.filter((v) => !v.wcag) });
+  rows.push({ path, label, wcag: wcagFails, advisory: r.violations.filter((v) => !v.wcag), reflow });
+  if (reflow.scrollW > reflow.vw + 1) totalViolations++;
   await page.close();
 }
 
@@ -80,6 +96,9 @@ for (const row of rows) {
     row.wcag.length ? row.wcag.map((v) => `${v.id} x${v.n}`).join(', ') : 'no WCAG AA violations'}${
     row.advisory.length ? `   [advisory: ${row.advisory.map((v) => v.id).join(', ')}]` : ''}`);
   for (const v of row.wcag) console.log(`        ${v.id}: ${v.sample}`);
+  if (row.reflow.scrollW > row.reflow.vw + 1) {
+    console.log(`FAIL  ${row.path.padEnd(22)} reflow: scrolls sideways at 320px (${row.reflow.scrollW}px) — ${row.reflow.offenders.join(', ')}`);
+  }
 }
 
 await browser.close();

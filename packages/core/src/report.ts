@@ -12,7 +12,7 @@ import { buildExhibits, scoreExposure, BAND_LABEL, type Exhibit, type Exposure }
 import { describeCoverage, type Coverage, type RenderMode } from './coverage.js';
 import { recipeFor, type Recipe } from './remediation.js';
 import { MARKET_RATES, SOURCES } from './litigation.js';
-import type { Finding } from './findings.js';
+import { REGION_LABEL, type Finding } from './findings.js';
 
 export interface ReportInput {
   readonly url: string;
@@ -84,7 +84,9 @@ function buildHeadline(exposure: Exposure, host: string): string {
   const total = exposure.totalInstances;
   const blocking =
     blockingInstances > 0
-      ? ` ${blockingInstances === total ? 'Every one of them' : `${blockingInstances} of them`} carries a failure that can stop a user completing a task.`
+      ? blockingInstances === total
+        ? ' Every one of them carries a failure that can stop a user completing a task.'
+        : ` ${blockingInstances} of them carr${blockingInstances === 1 ? 'ies' : 'y'} a failure that can stop a user completing a task.`
       : '';
   return `${host} fails ${n} WCAG 2.2 Level AA success ${n === 1 ? 'criterion' : 'criteria'} across ${total} ${total === 1 ? 'element' : 'elements'}.${blocking}`;
 }
@@ -97,8 +99,12 @@ function buildSummary(exposure: Exposure, regimes: readonly Regime[], deadlines:
   const top = exposure.scored[0];
   if (top) {
     const pct = Math.round(top.share * 100);
+    const where =
+      top.worstRegion === 'unknown'
+        ? 'the page body'
+        : REGION_LABEL[top.worstRegion].toLowerCase();
     parts.push(
-      `A single rule — ${top.finding.ruleId} — accounts for ${pct}% of the measured exposure, concentrated in ${top.worstRegion === 'unknown' ? 'the page body' : top.worstRegion}.`,
+      `A single rule — ${top.finding.ruleId} — accounts for ${pct}% of the measured exposure, concentrated in ${where}.`,
     );
   }
 

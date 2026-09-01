@@ -173,13 +173,33 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
 .site-nav a { color: var(--ink-2); text-decoration: none; font-size: 0.94rem; font-weight: 520; }
 .site-nav a:hover, .site-nav a[aria-current='page'] { color: var(--ink); text-decoration: underline; }
 
+/*
+ * On a narrow screen the nav wraps to three lines, and a sticky header that
+ * tall swallows most of the viewport. Below 46rem it scrolls away instead, and
+ * the nav is compacted into a single scrollable row.
+ */
+@media (max-width: 46rem) {
+  .site-header { position: static; }
+  .site-header .wrap { min-height: 0; padding-block: 0.6rem; gap: 0.75rem; }
+  .site-nav {
+    order: 3; width: 100%; margin-left: 0; gap: 1rem;
+    overflow-x: auto; flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .site-nav a { white-space: nowrap; font-size: 0.9rem; }
+  #theme-toggle { margin-left: auto; }
+  .hero { padding-top: 2rem; }
+}
+
 .site-footer {
   border-top: 1px solid var(--rule);
   margin-top: 5rem; padding: 2.5rem 0 3.5rem;
   color: var(--ink-3); font-size: 0.9rem;
 }
 .site-footer a { color: var(--ink-2); }
-.footer-cols { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.footer-cols { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); }
 .footer-cols h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-3); margin-bottom: 0.7rem; }
 .footer-cols ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.42rem; }
 
@@ -240,8 +260,8 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
   padding: 1.35rem 1.5rem;
 }
 .grid { display: grid; gap: 1.1rem; }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr)); }
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(15.5rem, 100%), 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(21rem, 100%), 1fr)); }
 
 .callout {
   border-left: 4px solid var(--rule-strong);
@@ -277,7 +297,7 @@ hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
   align-items: start;
   margin: 2rem 0 2.5rem;
 }
-@media (max-width: 47rem) { .verdict { grid-template-columns: 1fr; } }
+@media (max-width: 47rem) { .verdict { grid-template-columns: minmax(0, 1fr); } }
 
 .gauge { text-align: center; }
 .gauge svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
@@ -346,7 +366,7 @@ tbody tr:hover { background: var(--paper-2); }
 
 .deadline-strip {
   display: grid; gap: 0.9rem;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
   margin: 1.5rem 0;
 }
 .deadline {
@@ -369,9 +389,24 @@ tbody tr:hover { background: var(--paper-2); }
 .stage { display: none; }
 .stage[data-active='true'] { display: block; }
 
+/*
+ * The render surface.
+ *
+ * The frame has to keep real desktop dimensions or the browser cannot lay the
+ * scanned page out, and contrast becomes unmeasurable. Pushing it off-screen
+ * with a negative offset still let it extend the document's scroll width — on a
+ * 390px viewport that produced 500px of horizontal scroll, which is a Reflow
+ * failure (1.4.10) on an accessibility tool. Clipping it inside a zero-sized
+ * fixed wrapper contributes no layout at any viewport, while the frame inside
+ * still renders at full size.
+ */
+.render-surface {
+  position: fixed; top: 0; left: 0;
+  width: 0; height: 0; overflow: hidden;
+  pointer-events: none;
+}
 #preview-frame {
   width: 1280px; height: 900px; border: 0;
-  position: absolute; left: -200vw; top: 0;
   pointer-events: none;
 }
 
@@ -393,7 +428,10 @@ tbody tr:hover { background: var(--paper-2); }
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   align-items: start;
 }
-@media (max-width: 58rem) { .hero-grid { grid-template-columns: 1fr; } }
+/* minmax(0, 1fr), not 1fr: a bare 1fr resolves its minimum to min-content, so
+   a wide child — the jurisdiction select, whose intrinsic width is its longest
+   option — pushes the column past the viewport and scrolls the page sideways. */
+@media (max-width: 58rem) { .hero-grid { grid-template-columns: minmax(0, 1fr); } }
 
 .clock {
   border: 1px solid var(--rule);
@@ -424,8 +462,11 @@ select {
   border: 1.5px solid var(--rule-strong);
   border-radius: 6px;
   background: var(--band-bg); color: var(--ink);
-  max-width: 100%;
+  /* A select is as wide as its longest option unless told otherwise. */
+  max-width: 100%; width: 100%;
 }
+.form-hint label { display: block; margin-bottom: 0.3rem; }
+.form-hint select { max-width: 26rem; }
 
 details.card > summary { cursor: pointer; }
 details.card > summary::marker { color: var(--ink-3); }
@@ -450,8 +491,16 @@ details.card > summary::marker { color: var(--ink-3); }
 .cta .scan-row { margin-top: 1rem; }
 
 .index-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; }
-.index-list li { display: grid; grid-template-columns: 4.6rem 1fr auto; gap: 0.9rem; align-items: baseline;
-  padding: 0.5rem 0; border-bottom: 1px solid var(--rule); }
+.index-list li { display: grid; grid-template-columns: 4.6rem minmax(0, 1fr) auto; gap: 0.9rem;
+  align-items: baseline; padding: 0.5rem 0; border-bottom: 1px solid var(--rule); }
+/* At 320px the fixed first column plus an auto third column no longer fit;
+   stack them rather than scrolling the page sideways (WCAG 1.4.10). */
+@media (max-width: 30rem) {
+  .index-list li { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; }
+  .index-list li > :last-child { justify-self: start; }
+  .clock-list li { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+  .clock-days { text-align: left; }
+}
 .index-list li > :last-child { justify-self: end; }
 .index-num { font-family: var(--mono); font-size: 0.84rem; color: var(--ink-3); }
 .index-list a { text-decoration: none; font-weight: 540; }
