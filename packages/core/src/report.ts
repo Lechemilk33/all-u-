@@ -109,7 +109,11 @@ function buildSummary(exposure: Exposure, regimes: readonly Regime[], deadlines:
     );
   } else if (regimes.length > 0) {
     const names = regimes.map((r) => r.shortName).join(', ');
-    parts.push(`Regimes applied: ${names}. All applicable deadlines have already passed.`);
+    parts.push(
+      deadlines.length > 0
+        ? `Regimes applied: ${names}. Every dated deadline under them has already passed, so the obligation is live now.`
+        : `Regimes applied: ${names}. There is no deadline to count down to under ${regimes.length === 1 ? 'it' : 'them'} — the duty is continuous, and you find out you have failed it when a complaint arrives.`,
+    );
   }
 
   return parts.join(' ');

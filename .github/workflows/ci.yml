@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+
+      # Curbcut has to pass Curbcut. This fails the build on any Level AA
+      # violation on our own pages.
+      - run: npx playwright install --with-deps chromium
+      - run: node test/dogfood.mjs
+      - run: node test/e2e.mjs

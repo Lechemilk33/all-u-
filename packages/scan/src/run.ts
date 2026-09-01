@@ -11,6 +11,7 @@ import { regionOf, resolveTarget, visibleLabelOf } from './enrich.js';
 
 /** The subset of the axe API Curbcut uses. Kept structural to avoid a hard dep. */
 export interface AxeLike {
+  getRules?(): { ruleId: string; tags: string[] }[];
   run(
     context: unknown,
     options: unknown,
@@ -52,6 +53,13 @@ export interface ScanResult {
   readonly passedRules: number;
   readonly title: string;
   readonly lang: string | null;
+  /**
+   * Every rule the engine carries, with its WCAG tags. Coverage must be
+   * computed from what the engine *can* decide, not from the rules that
+   * happened to produce a result on this page — otherwise a clean page
+   * reports near-zero coverage, which is exactly backwards.
+   */
+  readonly engineRules: readonly { readonly ruleId: string; readonly tags: readonly string[] }[];
 }
 
 function tagsFor(level: 'A' | 'AA' | 'AAA', bestPractice: boolean): string[] {
@@ -115,5 +123,6 @@ export async function scanDocument(
     passedRules: results.passes?.length ?? 0,
     title: doc.title ?? '',
     lang: doc.documentElement?.getAttribute('lang') ?? null,
+    engineRules: axe.getRules?.() ?? [],
   };
 }
