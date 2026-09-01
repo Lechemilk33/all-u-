@@ -17,7 +17,7 @@
     "content": "node scripts/generate-content.mjs && node scripts/build-bookmarklet.mjs",
     "dev": "npm run dev -w @curbcut/web",
     "test": "node --test packages/core/test/*.test.mjs",
-    "typecheck": "tsc -b --pretty packages/core packages/scan",
+    "typecheck": "tsc -b --pretty packages/core packages/scan packages/cli",
     "scan": "node packages/cli/bin/curbcut.mjs",
     "build:audit": "vite build -c packages/web/vite.audit.config.ts"
   },

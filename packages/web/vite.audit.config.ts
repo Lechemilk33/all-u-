@@ -9,6 +9,14 @@ import { resolve } from 'node:path';
  */
 export default defineConfig({
   root: resolve(import.meta.dirname),
+  /**
+   * ASCII-only output. A classic script injected into a page we do not control
+   * is decoded using that page's encoding when the response carries no charset,
+   * so a literal em dash in this bundle renders as mojibake on any host page
+   * that is not UTF-8. Escaping non-ASCII to \uXXXX makes the payload
+   * encoding-independent instead of relying on a header being right.
+   */
+  esbuild: { charset: 'ascii' },
   build: {
     outDir: resolve(import.meta.dirname, 'public'),
     emptyOutDir: false,

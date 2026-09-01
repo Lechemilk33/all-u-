@@ -110,7 +110,10 @@ function firstReason(summary: string | undefined): string | undefined {
     .split('\n')
     .map((l) => l.trim())
     .find((l) => l.length > 0 && !/^Fix (any|all) of the following/i.test(l));
-  return line ? line.replace(/^[-•]\s*/, '') : undefined;
+  // \u2022 is escaped rather than literal: esbuild's ascii charset option does not
+  // rewrite regex literals, and this file is bundled into a script injected into
+  // pages whose encoding we do not control.
+  return line ? line.replace(/^[-\u2022]\s*/, '') : undefined;
 }
 
 export function toFinding(raw: RawRuleResult): Finding {
