@@ -10,10 +10,9 @@ import { createServer } from 'node:http';
 import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { chromium } from 'playwright';
+import { launchChromium, launchPersistent } from './chromium.mjs';
 
 const DIST = new URL('../packages/extension/dist', import.meta.url).pathname;
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const PORT = 4330;
 
 const BODY = `<h1>Nordvik Supply</h1>
@@ -53,8 +52,7 @@ const server = createServer((req, res) => {
 });
 await new Promise((r) => server.listen(PORT, r));
 
-const context = await chromium.launchPersistentContext('', {
-  executablePath: CHROME,
+const context = await launchPersistent('', {
   channel: 'chromium',
   args: [`--disable-extensions-except=${EXT}`, `--load-extension=${EXT}`],
 });

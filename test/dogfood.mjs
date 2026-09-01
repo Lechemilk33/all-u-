@@ -8,11 +8,10 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
-import { chromium } from 'playwright';
+import { launchChromium, launchPersistent } from './chromium.mjs';
 
 const ROOT = new URL('../packages/web/dist/', import.meta.url).pathname;
 const AXE = new URL('../node_modules/axe-core/axe.min.js', import.meta.url).pathname;
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const PORT = 4322;
 
 const PAGES = [
@@ -45,7 +44,7 @@ const server = createServer(async (req, res) => {
 await new Promise((r) => server.listen(PORT, r));
 
 const axeSrc = await readFile(AXE, 'utf8');
-const browser = await chromium.launch({ executablePath: CHROME });
+const browser = await launchChromium();
 
 let totalViolations = 0;
 const rows = [];

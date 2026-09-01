@@ -7,10 +7,9 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
-import { chromium } from 'playwright';
+import { launchChromium, launchPersistent } from './chromium.mjs';
 
 const ROOT = new URL('../packages/web/dist/', import.meta.url).pathname;
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const PORT = 4319;
 
 /** A deliberately broken storefront: every failure here is planted. */
@@ -69,7 +68,7 @@ const server = createServer(async (req, res) => {
 
 await new Promise((r) => server.listen(PORT, r));
 
-const browser = await chromium.launch({ executablePath: CHROME });
+const browser = await launchChromium();
 const page = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
 const consoleErrors = [];
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') consoleErrors.push(`[${m.type()}] ${m.text()}`); });

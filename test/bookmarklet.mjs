@@ -9,10 +9,9 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
-import { chromium } from 'playwright';
+import { launchChromium, launchPersistent } from './chromium.mjs';
 
 const DIST = new URL('../packages/web/dist/', import.meta.url).pathname;
-const CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const PORT = 4323;
 
 /**
@@ -53,7 +52,7 @@ const server = createServer(async (req, res) => {
 });
 await new Promise((r) => server.listen(PORT, r));
 
-const browser = await chromium.launch({ executablePath: CHROME });
+const browser = await launchChromium();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));

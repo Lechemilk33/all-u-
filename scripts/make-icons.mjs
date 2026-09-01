@@ -5,17 +5,16 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright';
+import { launchChromium } from '../test/chromium.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SVG = join(HERE, '..', 'packages', 'web', 'public', 'favicon.svg');
 const OUT = join(HERE, '..', 'packages', 'extension', 'icons');
-const CHROME = process.env.CHROME_PATH ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 await mkdir(OUT, { recursive: true });
 const svg = await readFile(SVG, 'utf8');
 
-const browser = await chromium.launch({ executablePath: CHROME });
+const browser = await launchChromium();
 for (const size of [16, 48, 128]) {
   const page = await browser.newPage({ viewport: { width: size, height: size } });
   await page.setContent(
