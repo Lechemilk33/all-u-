@@ -21,7 +21,7 @@ export default defineConfig({
     outDir: resolve(import.meta.dirname, 'public'),
     emptyOutDir: false,
     lib: {
-      entry: resolve(import.meta.dirname, 'src/audit.ts'),
+      entry: resolve(import.meta.dirname, 'src/audit-bookmarklet.ts'),
       formats: ['iife'],
       name: '__curbcutAudit',
       fileName: () => 'audit.js',

@@ -14,6 +14,7 @@ import {
   type RemediationItem,
   type UpcomingDeadline,
 } from '@curbcut/core';
+import { siteHref } from './config.js';
 
 const esc = (s: unknown): string =>
   String(s ?? '')
@@ -114,7 +115,7 @@ function remediationRow(item: RemediationItem): string {
     : `<p>${esc(item.finding.help)}. <a href="${esc(item.finding.helpUrl)}" rel="noopener">Engine documentation for this rule</a>.</p>`;
 
   const fixLink = item.recipe
-    ? `<p><a href="/fix/${esc(item.ruleId)}/">Platform-specific instructions for ${esc(item.recipe.title.toLowerCase())}</a></p>`
+    ? `<p><a href="${esc(siteHref(`/fix/${item.ruleId}/`))}">Platform-specific instructions for ${esc(item.recipe.title.toLowerCase())}</a></p>`
     : '';
 
   return `
@@ -180,8 +181,8 @@ ${
       exposure.verdict.failedCriteria.length
         ? `<p class="form-hint">Failing criteria: ${exposure.verdict.failedCriteria
             .map((c) => {
-              const href = criterionPath(c);
-              return href ? `<a href="${esc(href)}">${esc(c)}</a>` : esc(c);
+              const path = criterionPath(c);
+              return path ? `<a href="${esc(siteHref(path))}">${esc(c)}</a>` : esc(c);
             })
             .join(', ')}</p>`
         : ''
@@ -254,7 +255,7 @@ ${
       ${report.regimes
         .map(
           (r) => `<tr>
-            <th scope="row"><a href="/law/${esc(r.id)}/">${esc(r.shortName)}</a><br>
+            <th scope="row"><a href="${esc(siteHref(`/law/${r.id}/`))}">${esc(r.shortName)}</a><br>
               <span class="form-hint">${esc(r.jurisdiction)}</span></th>
             <td>${esc(r.appliesTo)}</td>
             <td>WCAG ${esc(r.standard.wcag)} ${esc(r.standard.level)}</td>

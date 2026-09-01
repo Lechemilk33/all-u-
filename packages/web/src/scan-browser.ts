@@ -32,7 +32,12 @@ export interface ProxyResponse {
 }
 
 export class ScanError extends Error {
-  constructor(message: string, readonly hint?: string) {
+  constructor(
+    message: string,
+    readonly hint?: string,
+    /** Set when the failure is that no fetch proxy is deployed to call. */
+    readonly proxyUnavailable = false,
+  ) {
     super(message);
     this.name = 'ScanError';
   }
@@ -52,14 +57,22 @@ export async function fetchThroughProxy(url: string, signal?: AbortSignal): Prom
   try {
     res = await fetch(proxyRequestUrl(url), { signal });
   } catch {
-    throw new ScanError(
-      'Could not reach the Curbcut fetch service.',
-      'Check your connection. If you are running your own copy, confirm the proxy URL in the page metadata is correct.',
-    );
+    throw new ScanError('Could not reach the fetch service.', undefined, true);
   }
 
   const body = (await res.json().catch(() => ({}))) as Partial<ProxyResponse> & { error?: string; hint?: string };
-  if (!res.ok) throw new ScanError(body.error ?? `The fetch service returned ${res.status}.`, body.hint);
+  if (!res.ok) {
+    // 404 or 405 from a static host means there is no proxy deployed at all,
+    // which is a different problem from a site that refused to be fetched.
+    const missing = res.status === 404 || res.status === 405 || res.status === 501;
+    throw new ScanError(
+      missing
+        ? 'This deployment has no fetch proxy, so it cannot scan by URL.'
+        : (body.error ?? `The fetch service returned ${res.status}.`),
+      missing ? undefined : body.hint,
+      missing,
+    );
+  }
   if (typeof body.html !== 'string') throw new ScanError('The fetch service returned no HTML.');
 
   return {

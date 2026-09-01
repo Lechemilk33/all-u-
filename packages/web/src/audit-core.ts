@@ -23,7 +23,6 @@ import {
   type Region,
 } from '@curbcut/core';
 import { regionOf, visibleLabelOf } from '@curbcut/scan';
-import axeSource from 'axe-core/axe.min.js?raw';
 
 const PANEL_ID = 'curbcut-audit-panel';
 
@@ -117,7 +116,16 @@ function mountPanel(): { root: ShadowRoot; close: () => void } {
   return { root, close: () => host.remove() };
 }
 
-export async function runAudit(): Promise<void> {
+/**
+ * How the caller supplies the engine. The bookmarklet injects it into the page;
+ * the extension bundles it into its own isolated world, where the page's
+ * Content-Security-Policy does not apply and injection is unnecessary.
+ */
+export type { AxeGlobal };
+
+export type AxeProvider = () => AxeGlobal | Promise<AxeGlobal>;
+
+export async function runAudit(getAxe: AxeProvider): Promise<void> {
   const { root, close } = mountPanel();
 
   const panel = document.createElement('div');
@@ -128,7 +136,7 @@ export async function runAudit(): Promise<void> {
   root.appendChild(panel);
 
   try {
-    const axe = loadAxe();
+    const axe = await getAxe();
     const results = await axe.run(document, {
       runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'] },
       resultTypes: ['violations', 'incomplete'],
@@ -235,5 +243,3 @@ export async function runAudit(): Promise<void> {
     panel.querySelector('[data-act="close"]')?.addEventListener('click', close);
   }
 }
-
-void runAudit();

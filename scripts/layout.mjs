@@ -46,6 +46,9 @@ export function makeScrollableRegionsFocusable(html) {
   return out;
 }
 
+import { BASE, href } from './base.mjs';
+export { BASE, href };
+
 export const SITE = {
   name: 'Curbcut',
   origin: 'https://curbcut.dev',
@@ -89,7 +92,7 @@ export function page({ title, description, path, body, crumbs = [], jsonLd }) {
 <meta property="og:type" content="article">
 <meta property="og:url" content="${esc(canonical)}">
 <meta name="twitter:card" content="summary">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="${href("/favicon.svg")}" type="image/svg+xml">
 <link rel="stylesheet" href="/src/styles.css">
 <script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</script>
 ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ''}
@@ -99,7 +102,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
 
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href="/">
+    <a class="brand" href="${href("/")}">
       <svg class="brand-mark" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true" focusable="false">
         <path d="M2 21h22v3H2z" fill="currentColor" opacity=".38"/>
         <path d="M2 21V9h9l8 12H2z" fill="currentColor"/>
@@ -107,11 +110,12 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
       Curbcut
     </a>
     <nav class="site-nav" aria-label="Main">
-      <a href="/deadlines/">Deadlines</a>
-      <a href="/law/">The law</a>
-      <a href="/fix/">Fix guides</a>
-      <a href="/wcag/">WCAG 2.2</a>
-      <a href="/method/">Method</a>
+      <a href="${href("/extension/")}">Extension</a>
+      <a href="${href("/deadlines/")}">Deadlines</a>
+      <a href="${href("/law/")}">The law</a>
+      <a href="${href("/fix/")}">Fix guides</a>
+      <a href="${href("/wcag/")}">WCAG 2.2</a>
+      <a href="${href("/method/")}">Method</a>
     </nav>
   </div>
 </header>
@@ -124,7 +128,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
           .map((c, i) =>
             i === crumbTrail.length - 1
               ? `<li><span aria-current="page">${esc(c.label)}</span></li>`
-              : `<li><a href="${esc(c.href)}">${esc(c.label)}</a></li>`,
+              : `<li><a href="${esc(href(c.href))}">${esc(c.label)}</a></li>`,
           )
           .join('')}
       </ol>
@@ -137,7 +141,7 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
         Curbcut checks any page against WCAG 2.2 and ranks what it finds by legal exposure
         rather than error count. Free, no account, runs in your browser.
       </p>
-      <form class="scan-row" action="/" method="get">
+      <form class="scan-row" action="${href("/")}" method="get">
         <label class="visually-hidden" for="cta-url">Website address to scan</label>
         <input class="scan-input" id="cta-url" name="url" type="url" inputmode="url"
                placeholder="yourstore.com" required>
@@ -153,26 +157,27 @@ ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script
       <div>
         <h2>Scan</h2>
         <ul>
-          <li><a href="/">Scan a page</a></li>
-          <li><a href="/bookmarklet/">Bookmarklet</a></li>
-          <li><a href="/method/">How the score works</a></li>
+          <li><a href="${href("/")}">Scan a page</a></li>
+          <li><a href="${href("/extension/")}">Browser extension</a></li>
+          <li><a href="${href("/bookmarklet/")}">Bookmarklet</a></li>
+          <li><a href="${href("/method/")}">How the score works</a></li>
         </ul>
       </div>
       <div>
         <h2>Reference</h2>
         <ul>
-          <li><a href="/wcag/">WCAG 2.2 criteria</a></li>
-          <li><a href="/law/">Legal regimes</a></li>
-          <li><a href="/deadlines/">Deadlines</a></li>
+          <li><a href="${href("/wcag/")}">WCAG 2.2 criteria</a></li>
+          <li><a href="${href("/law/")}">Legal regimes</a></li>
+          <li><a href="${href("/deadlines/")}">Deadlines</a></li>
         </ul>
       </div>
       <div>
         <h2>Fix guides</h2>
         <ul>
-          <li><a href="/fix/shopify/">Shopify</a></li>
-          <li><a href="/fix/wordpress/">WordPress</a></li>
-          <li><a href="/fix/react/">React and Next.js</a></li>
-          <li><a href="/fix/">All platforms</a></li>
+          <li><a href="${href("/fix/shopify/")}">Shopify</a></li>
+          <li><a href="${href("/fix/wordpress/")}">WordPress</a></li>
+          <li><a href="${href("/fix/react/")}">React and Next.js</a></li>
+          <li><a href="${href("/fix/")}">All platforms</a></li>
         </ul>
       </div>
     </div>

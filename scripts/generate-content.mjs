@@ -9,7 +9,8 @@
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { page, esc, SITE, makeScrollableRegionsFocusable } from './layout.mjs';
+import { page, esc, SITE, makeScrollableRegionsFocusable, href } from './layout.mjs';
+import { BASE } from './base.mjs';
 
 import {
   SUCCESS_CRITERIA, criteriaAtLevel, principleName, PRINCIPLES,
@@ -155,7 +156,7 @@ ${
          <thead><tr><th scope="col">Regime</th><th scope="col">Jurisdiction</th><th scope="col">Requires</th></tr></thead>
          <tbody>${requiredBy
            .map(
-             (r) => `<tr><th scope="row"><a href="/law/${esc(r.id)}/">${esc(r.shortName)}</a></th>
+             (r) => `<tr><th scope="row"><a href="${href(`/law/${esc(r.id)}/`)}">${esc(r.shortName)}</a></th>
                <td>${esc(r.jurisdiction)}</td><td>WCAG ${esc(r.standard.wcag)} ${esc(r.standard.level)}</td></tr>`,
            )
            .join('')}</tbody>
@@ -177,7 +178,7 @@ ${
                     <h4>After</h4><pre><code>${esc(r.right)}</code></pre>`
                  : ''
              }
-             <p><a href="/fix/${esc(r.ruleId)}/">Platform-specific instructions →</a></p>`,
+             <p><a href="${href(`/fix/${esc(r.ruleId)}/`)}">Platform-specific instructions →</a></p>`,
          )
          .join('')}`
     : ''
@@ -190,7 +191,7 @@ ${
       ? 'Yes, in part. Automated rules can find the mechanical failures of this criterion — a missing attribute, an insufficient ratio. They cannot judge whether what is there is correct or meaningful, so a passing result is a floor and not a conclusion.'
       : 'Not reliably. No automated rule decides this criterion on its own; it needs a person, usually with assistive technology. A scanner reporting no failures here has not tested it.'
   }
-  <a href="/method/">How Curbcut reports what it did not test →</a>
+  <a href="${href(`/method/`)}">How Curbcut reports what it did not test →</a>
 </p>`;
 
     await emit(
@@ -224,7 +225,7 @@ ${
       const risk = riskForCriterion(sc.num);
       return `<li>
         <span class="index-num">${esc(sc.num)}</span>
-        <a href="${scPath(sc)}">${esc(sc.name)}</a>
+        <a href="${href(scPath(sc))}">${esc(sc.name)}</a>
         <span class="tag${sc.level === 'AAA' ? '' : ' tag-a'}">${sc.obsolete ? 'Obsolete' : `Level ${esc(sc.level)}`}${risk.salience >= 4 ? ' · often pleaded' : ''}</span>
       </li>`;
     })
@@ -252,7 +253,7 @@ ${
     Each criterion below is annotated with its <strong>litigation salience</strong>: how often
     it is actually named in accessibility complaints, as distinct from how serious the barrier
     is. The two are not the same, and confusing them is how remediation budgets get spent in the
-    wrong order. <a href="/method/">How the model works →</a>
+    wrong order. <a href="${href(`/method/`)}">How the model works →</a>
   </p>
 </div>
 ${byPrinciple}`,
@@ -322,7 +323,7 @@ ${
   ${REGIMES.filter((o) => o.id !== r.id)
     .map(
       (o) => `<li><span class="index-num">${esc(o.territories.join(', '))}</span>
-        <a href="/law/${esc(o.id)}/">${esc(o.name)}</a>
+        <a href="${href(`/law/${esc(o.id)}/`)}">${esc(o.name)}</a>
         <span class="tag">WCAG ${esc(o.standard.wcag)} ${esc(o.standard.level)}</span></li>`,
     )
     .join('')}
@@ -371,7 +372,7 @@ ${
   <tbody>
   ${REGIMES.map(
     (r) => `<tr>
-      <th scope="row"><a href="/law/${esc(r.id)}/">${esc(r.shortName)}</a><br>
+      <th scope="row"><a href="${href(`/law/${esc(r.id)}/`)}">${esc(r.shortName)}</a><br>
         <span class="form-hint">${esc(r.jurisdiction)}</span></th>
       <td>${esc(r.appliesTo.split('.')[0])}.</td>
       <td>WCAG ${esc(r.standard.wcag)} ${esc(r.standard.level)}</td>
@@ -398,7 +399,7 @@ ${
   not.
 </p>
 
-<p><a href="/deadlines/">See which deadlines are still running →</a></p>`,
+<p><a href="${href(`/deadlines/`)}">See which deadlines are still running →</a></p>`,
     }),
   );
 }
@@ -449,7 +450,7 @@ ${platforms
     .slice(0, 8)
     .map(
       (o) => `<li><span class="index-num">${esc(o.ruleId.slice(0, 12))}</span>
-        <a href="/fix/${esc(o.ruleId)}/">${esc(o.title)}</a>
+        <a href="${href(`/fix/${esc(o.ruleId)}/`)}">${esc(o.title)}</a>
         <span class="tag">${esc(o.effort)}</span></li>`,
     )
     .join('')}
@@ -500,7 +501,7 @@ ${
     ? `<pre><code>${esc(r.right)}</code></pre>`
     : ''
 }
-<p><a href="/fix/${esc(r.ruleId)}/">Full guide to ${esc(r.title.toLowerCase())} →</a></p>`,
+<p><a href="${href(`/fix/${esc(r.ruleId)}/`)}">Full guide to ${esc(r.title.toLowerCase())} →</a></p>`,
   )
   .join('')}`;
 
@@ -535,7 +536,7 @@ ${
 <ul class="index-list">
   ${RECIPES.map(
     (r) => `<li><span class="index-num">${esc({ minutes: 'mins', hours: 'hrs', days: 'days' }[r.effort])}</span>
-      <a href="/fix/${esc(r.ruleId)}/">${esc(r.title)}</a>
+      <a href="${href(`/fix/${esc(r.ruleId)}/`)}">${esc(r.title)}</a>
       <span class="tag">${esc(r.ruleId)}</span></li>`,
   ).join('')}
 </ul>
@@ -545,7 +546,7 @@ ${
   ${PLATFORMS.filter((p) => recipesForPlatform(p.id).length > 0)
     .map(
       (p) => `<li><span class="index-num">${recipesForPlatform(p.id).length}</span>
-        <a href="/fix/${esc(p.id)}/">${esc(p.name)}</a>
+        <a href="${href(`/fix/${esc(p.id)}/`)}">${esc(p.name)}</a>
         <span class="tag">guides</span></li>`,
     )
     .join('')}
@@ -598,7 +599,7 @@ ${
         .map(
           (d) => `<div class="deadline">
             <p class="deadline-days"><span data-deadline="${esc(d.date)}">${Math.abs(d.daysAway).toLocaleString('en-US')}</span></p>
-            <p class="deadline-label"><strong><a href="/law/${esc(d.regime.id)}/">${esc(d.regime.shortName)}</a></strong>
+            <p class="deadline-label"><strong><a href="${href(`/law/${esc(d.regime.id)}/`)}">${esc(d.regime.shortName)}</a></strong>
               — ${esc(d.label)}, ${esc(d.date)}.<br>${esc(d.appliesTo)}</p>
           </div>`,
         )
@@ -611,7 +612,7 @@ ${
   .map(
     (d) => `<div class="deadline deadline-passed">
       <p class="deadline-days">Passed</p>
-      <p class="deadline-label"><strong><a href="/law/${esc(d.regime.id)}/">${esc(d.regime.shortName)}</a></strong>
+      <p class="deadline-label"><strong><a href="${href(`/law/${esc(d.regime.id)}/`)}">${esc(d.regime.shortName)}</a></strong>
         — was due ${esc(d.date)}.<br>${esc(d.appliesTo)}</p>
     </div>`,
   )
@@ -633,7 +634,7 @@ ${
   70% of them. The absence of a date is not the absence of urgency.
 </p>
 
-<p><a href="/law/">Compare all eight regimes →</a></p>`,
+<p><a href="${href(`/law/`)}">Compare all eight regimes →</a></p>`,
     }),
   );
 }
@@ -751,6 +752,80 @@ ${list(SOURCES.map((s) => `<a href="${esc(s.url)}" rel="noopener">${esc(s.label)
   );
 }
 
+async function extensionPage() {
+  await emit(
+    '/extension/',
+    page({
+      title: 'The Curbcut browser extension — audit any page, including behind a login | Curbcut',
+      description: 'A Chrome extension that audits the page you are on against WCAG 2.2 and ranks failures by legal exposure. Works on sites whose Content-Security-Policy blocks other tools. Nothing leaves your browser.',
+      path: '/extension/',
+      crumbs: [{ href: '/extension/', label: 'Extension' }],
+      body: `
+<h1>The browser extension</h1>
+<p class="lede">
+  One click audits the page in front of you — in its real state, after its own
+  JavaScript has run, behind whatever login you are already signed in to. Nothing
+  is fetched, nothing is uploaded, and no server is involved at any point.
+</p>
+
+<div class="callout">
+  <h2 style="font-size:1rem;margin-bottom:.35rem">Install</h2>
+  <ol>
+    <li><a href="${href('/curbcut-extension.zip')}" download>Download the extension</a> and unzip it.</li>
+    <li>Open <code>chrome://extensions</code> and turn on <strong>Developer mode</strong>, top right.</li>
+    <li>Click <strong>Load unpacked</strong> and select the unzipped folder.</li>
+    <li>Open any page and click the Curbcut icon, or press <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>.</li>
+  </ol>
+  <p class="form-hint">
+    Works in Chrome, Edge, Brave, Arc and any other Chromium browser. Publishing to
+    the Chrome Web Store removes the Developer-mode step; the store charges a
+    one-off $5 registration fee.
+  </p>
+</div>
+
+<h2>Why an extension rather than a web page</h2>
+<p>
+  A web page cannot read another site's HTML — browsers forbid it — so every
+  online scanner has to route your URL through a server it controls. That server
+  sees an anonymous, logged-out, unscripted copy of your site, which is not the
+  site your customers use.
+</p>
+<p>An extension has none of those limits:</p>
+${list([
+  '<strong>It sees the real page.</strong> Menus, modals, cart drawers, validation messages and anything else built at runtime are present to be tested. On a client-rendered site, a fetched copy is an empty shell.',
+  '<strong>It works behind a login.</strong> Account areas, admin panels, members&rsquo; portals, and a checkout with items actually in it — which is where the failures that cost money live.',
+  '<strong>It works where other tools cannot.</strong> A site with a strict Content-Security-Policy blocks injected scripts outright, which stops every bookmarklet. Extension code runs in an isolated world that the page&rsquo;s policy does not govern.',
+  '<strong>It reaches localhost and staging.</strong> Nothing has to be publicly reachable for the extension to audit it.',
+  '<strong>Nothing leaves your machine.</strong> Not a policy promise — there is no network call in it that carries page content.',
+])}
+
+<h2>Permissions</h2>
+<p>
+  The extension asks for <code>activeTab</code>, which grants access to a single
+  tab and only at the moment you click the icon. That is why the install page
+  carries no &ldquo;read all your data on every website&rdquo; warning: it cannot
+  read anything until you ask it to, and only the page you asked about.
+</p>
+
+<h2>What it reports</h2>
+<p>
+  The same analysis as the rest of Curbcut: 105 checks against WCAG 2.2 Level AA,
+  ranked by <a href="${href('/method/')}">legal exposure</a> rather than error
+  count, with the findings a complaint would actually reproduce listed first and
+  an explicit statement of what could not be tested.
+</p>
+
+<h2>If you would rather not install anything</h2>
+<p>
+  The <a href="${href('/bookmarklet/')}">bookmarklet</a> does the same audit with
+  no install at all — drag one link to your bookmarks bar. It cannot run on sites
+  with a strict Content-Security-Policy, which is the one thing the extension
+  adds.
+</p>`,
+    }),
+  );
+}
+
 async function bookmarkletPage() {
   // Kept in sync by the build: see scripts/build-bookmarklet.mjs
   await emit(
@@ -822,16 +897,17 @@ ${list([
 
 async function sitemap() {
   const urls = ['/', ...written].sort();
+  const prefix = BASE === '/' ? '' : BASE.replace(/\/$/, '');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url><loc>${SITE.origin}${u}</loc></url>`).join('\n')}
+${urls.map((u) => `  <url><loc>${SITE.origin}${prefix}${u}</loc></url>`).join('\n')}
 </urlset>
 `;
   await writeFile(join(HERE, '..', 'packages', 'web', 'public', 'sitemap.xml'), xml, 'utf8');
 
   await writeFile(
     join(HERE, '..', 'packages', 'web', 'public', 'robots.txt'),
-    `User-agent: *\nAllow: /\n\nSitemap: ${SITE.origin}/sitemap.xml\n`,
+    `User-agent: *\nAllow: /\n\nSitemap: ${SITE.origin}${prefix}/sitemap.xml\n`,
     'utf8',
   );
 }
@@ -844,6 +920,7 @@ await lawPages();
 await fixPages();
 await deadlinePage();
 await methodPage();
+await extensionPage();
 await bookmarkletPage();
 await sitemap();
 

@@ -511,3 +511,30 @@ details.card > summary::marker { color: var(--ink-3); }
 .risk-bar { display: inline-flex; gap: 3px; vertical-align: middle; }
 .risk-bar span { width: 9px; height: 15px; border-radius: 2px; background: var(--rule); }
 .risk-bar span[data-on='true'] { background: currentColor; }
+
+
+/* ---------- primary calls to action ---------- */
+
+.cta-row { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 2.25rem; }
+.cta-row .btn {
+  text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+  /* .btn is nowrap so labels do not break mid-phrase; these two are long enough
+     to overflow a 320px viewport, so they wrap and go full width instead. */
+  white-space: normal; text-align: center;
+}
+@media (max-width: 30rem) { .cta-row .btn { flex: 1 1 100%; } }
+
+.scan-form { margin-top: 2.5rem; padding-top: 1.6rem; border-top: 1px solid var(--rule); }
+.scan-heading {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--ink-3); font-weight: 660; margin-bottom: 0.75rem;
+}
+
+.fallback {
+  border: 1px solid var(--band-elevated); border-left-width: 4px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--paper-2); padding: 1rem 1.2rem; margin: 1rem 0 0;
+}
+.fallback h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+.fallback p, .fallback li { font-size: 0.92rem; }
+.fallback p:last-child { margin-bottom: 0; }

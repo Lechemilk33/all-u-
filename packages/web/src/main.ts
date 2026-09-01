@@ -8,6 +8,7 @@
  */
 
 import { buildReport, daysUntil, suggestRegimes, type RegimeId } from '@curbcut/core';
+import { siteHref } from './config.js';
 import { ScanError, normaliseUrl, scanUrlInBrowser, type BrowserScanResult } from './scan-browser.js';
 import { renderReport } from './report-view.js';
 import './styles.css';
@@ -84,6 +85,40 @@ function showError(err: unknown): void {
   if (status) status.textContent = message;
   input?.setAttribute('aria-invalid', 'true');
   showStage('intro');
+
+  if (err instanceof ScanError && err.proxyUnavailable) showProxyFallback();
+}
+
+/**
+ * A browser cannot read another origin's HTML, so scanning by URL needs a
+ * server-side fetch. On a static host there is none. Rather than leaving a dead
+ * error, point at the two paths that need no server and are strictly better
+ * anyway — they see the page as it really is, not an anonymous copy of it.
+ */
+function showProxyFallback(): void {
+  if (document.getElementById('proxy-fallback')) return;
+  const panel = document.createElement('div');
+  panel.className = 'fallback';
+  panel.id = 'proxy-fallback';
+  panel.innerHTML = `
+    <h3>URL scanning is not switched on for this deployment</h3>
+    <p>
+      A browser cannot read another site's HTML, so scanning by URL needs a small
+      server-side fetch that this host does not run. Both of these work right now,
+      and both see more than a URL scan ever could:
+    </p>
+    <ul>
+      <li><a href="${siteHref('/extension/')}"><strong>The browser extension</strong></a> —
+        audits the page you are on, behind your login, after its JavaScript has run,
+        and on sites whose security policy blocks every other tool.</li>
+      <li><a href="${siteHref('/bookmarklet/')}"><strong>The bookmarklet</strong></a> —
+        the same audit with nothing to install.</li>
+    </ul>
+    <p class="form-hint">
+      To switch URL scanning on, deploy the fetch proxy in <code>packages/worker</code>
+      and set its address in this page's <code>curbcut:proxy</code> meta tag.
+    </p>`;
+  errorBox?.insertAdjacentElement('afterend', panel);
 }
 
 function clearError(): void {
@@ -91,6 +126,7 @@ function clearError(): void {
     errorBox.hidden = true;
     errorBox.textContent = '';
   }
+  document.getElementById('proxy-fallback')?.remove();
   input?.removeAttribute('aria-invalid');
 }
 

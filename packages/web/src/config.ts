@@ -19,3 +19,17 @@ export const PROXY_URL: string = fromMeta('curbcut:proxy') ?? '/api/fetch';
 
 export const SITE_NAME = 'Curbcut';
 export const SITE_TAGLINE = 'See your site the way a plaintiff’s lawyer does.';
+
+/**
+ * The path the site is served from. Written into the page at build time so the
+ * client builds the same links the generator did — "/wcag/…" at a root domain,
+ * "/all-u-/wcag/…" on a project page.
+ */
+export const BASE: string = (() => {
+  const raw = fromMeta('curbcut:base') ?? '/';
+  const lead = raw.startsWith('/') ? raw : `/${raw}`;
+  return lead.endsWith('/') ? lead : `${lead}/`;
+})();
+
+/** Prefixes a site-absolute path with the base. */
+export const siteHref = (path: string): string => `${BASE}${path.replace(/^\//, '')}`;

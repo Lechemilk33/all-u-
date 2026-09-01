@@ -1,0 +1,65 @@
+name: Deploy site
+
+on:
+  push:
+    branches: [claude/overnight-wealth-project-64uc0w, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - run: npm ci
+
+      # GitHub Pages serves a project site from /<repo>/, so every internal link
+      # carries that prefix. base_path comes from the Pages configuration rather
+      # than being hard-coded, so this build also works at a custom domain.
+      - name: Build site
+        env:
+          CURBCUT_BASE: ${{ steps.pages.outputs.base_path }}/
+          CURBCUT_ORIGIN: ${{ steps.pages.outputs.origin }}${{ steps.pages.outputs.base_path }}
+        run: |
+          npm run build
+          npm run build -w @curbcut/extension
+
+      - name: Package the extension for download
+        run: |
+          cd packages/extension/dist
+          zip -qr ../../web/dist/curbcut-extension.zip .
+          echo "Packaged $(du -h ../../web/dist/curbcut-extension.zip | cut -f1)"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -37,6 +37,7 @@
       Curbcut
     </a>
     <nav class="site-nav" aria-label="Main">
+      <a href="/extension/">Extension</a>
       <a href="/deadlines/">Deadlines</a>
       <a href="/law/">The law</a>
       <a href="/fix/">Fix guides</a>
@@ -65,13 +66,23 @@
 
       <div class="hero-grid">
        <div>
+      <div class="cta-row">
+        <a class="btn" href="/extension/">Get the extension</a>
+        <a class="btn btn-secondary" href="/bookmarklet/">Or the bookmarklet — no install</a>
+      </div>
+      <p class="form-hint" style="margin-top:.9rem">
+        One click audits the page you are on — in its real state, behind your login,
+        after its own JavaScript has run. Free, no account, and nothing leaves your browser.
+      </p>
+
       <form class="scan-form" id="scan-form" novalidate>
+        <h2 class="scan-heading">Or scan a public URL</h2>
         <div class="scan-row">
           <label class="visually-hidden" for="scan-url">Website address to scan</label>
           <input class="scan-input" id="scan-url" name="url" type="url" inputmode="url"
                  autocomplete="url" spellcheck="false"
                  placeholder="yourstore.com  ·  or a checkout URL" required>
-          <button class="btn" id="scan-submit" type="submit">Scan the page</button>
+          <button class="btn btn-secondary" id="scan-submit" type="submit">Scan</button>
         </div>
         <p class="field-error" id="scan-error" role="alert" hidden></p>
         <p class="form-hint">
@@ -84,10 +95,6 @@
             <option value="GB">United Kingdom</option>
             <option value="CA">Canada</option>
           </select>
-        </p>
-        <p class="form-hint">
-          Free, no account, nothing stored. The scan runs in your browser — the page never
-          touches a Curbcut server except to be fetched.
         </p>
       </form>
        </div>
@@ -185,9 +192,11 @@
         <li><strong>Findings are mapped</strong> to success criteria, to the regime you selected, and to the exposure model.</li>
       </ol>
       <p>
-        For pages behind a login, or interfaces that only exist after JavaScript runs, use the
-        <a href="/bookmarklet/">bookmarklet</a> — it scans the page already open in front of you
-        and nothing leaves your machine.
+        That covers a public page. It does not cover anything behind a login, a cart with items
+        in it, or an interface that only exists once JavaScript has run — and those are where the
+        failures that cost money live. The <a href="/extension/">extension</a> and the
+        <a href="/bookmarklet/">bookmarklet</a> audit the real page instead, with no server
+        involved at all.
       </p>
     </section>
 
@@ -256,6 +265,7 @@
         <h2>Scan</h2>
         <ul>
           <li><a href="/">Scan a page</a></li>
+          <li><a href="/extension/">Browser extension</a></li>
           <li><a href="/bookmarklet/">Bookmarklet</a></li>
           <li><a href="/method/">How the score works</a></li>
         </ul>

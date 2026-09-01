@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Curbcut — accessibility exposure",
+  "short_name": "Curbcut",
+  "version": "0.1.0",
+  "description": "Audit any page against WCAG 2.2 and see which failures a legal complaint would actually point at. Runs entirely in your browser.",
+  "minimum_chrome_version": "116",
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" },
+  "action": {
+    "default_title": "Audit this page with Curbcut",
+    "default_icon": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" }
+  },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "permissions": ["activeTab", "scripting"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+Shift+A" },
+      "description": "Audit the current page"
+    }
+  }
+}
