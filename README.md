@@ -1,158 +1,89 @@
-# Curbcut
+# Bland — Identity Directions
 
-**See your site the way a plaintiff's lawyer does.**
+Five brand identity directions for a **standalone Bland storefront**, separate
+from the Bland Pro Shop retail site, each rendered against the **real Bland
+product catalogue**.
 
-An accessibility scanner that ranks what it finds by *legal exposure* rather
-than by error count, maps every finding to the regime that actually applies to
-you, and states plainly what it could not test.
+This is a design review tool, not a store. There is no cart, no checkout, no
+accounts and no database — every product tile links out to the live product page
+on blandpro.shop.
 
-It runs entirely in the browser. There is no account, no queue, no database, and
-no per-scan cost to anyone.
+## The question this is answering
 
----
+Bland Pro Shop resells 113 vendors across 1,476 products. 64 of those products
+are Bland's own — the fingerboards, the grip tape, the custom builds and, most
+importantly, the hand-cast concrete obstacle line, which is the one part of the
+range nobody can drop-ship.
 
-## Why this exists
+Today that house brand is invisible on its own store: it is absent from the
+Brands page, its collections carry no meta description, and its vendor field is
+split across three spellings. This prototype asks what it would look like if it
+had its own front door.
 
-Every accessibility scanner returns an error count. An error count is not a risk
-measure. Ten missing labels in a checkout form and ten low-contrast captions in a
-footer produce the same number and completely different outcomes.
+## The five directions
 
-Curbcut weights each finding by four things:
-
-| Factor | Range | What it captures |
+| | Direction | The bet |
 | --- | --- | --- |
-| Litigation salience | 0–5 | How often the criterion is actually named in complaints |
-| Blocking severity | 1–3 | Whether the failure stops a user finishing a task |
-| Page region | 0.6–2.0 | Checkout 2.0, sign-in 1.8, form 1.5, nav 1.3, main 1.0, footer 0.6 |
-| Volume | 1 + ln(n) | Many failures, with diminishing returns |
+| 1 | **Concrete** | An industrial materials company that happens to make fingerboard obstacles. |
+| 2 | **Deadpan** | The name is the joke; the execution refuses to be in on it. |
+| 3 | **Xerox** | A shop that sponsors riders, photocopied onto a flyer. |
+| 4 | **Nocturne** | Precision hardware — dark room, one light, product-led. |
+| 5 | **Arcade** | The nineties shop counter, in colour. |
 
-The weighted total passes through a saturating curve into a 0–100 **Exposure
-Index**, calibrated so a page carrying the median WebAIM Million failure profile
-lands in the mid-50s. There is a test that pins that calibration.
+Each carries a written thesis and an honest note on what it costs you — open
+**Notes** in the switcher.
 
-Reported separately and never conflated with it: a straight **conformance
-verdict**, which is a yes/no WCAG test.
+## Switching
 
-## What it will not do
+- Click a name in the bar at the bottom
+- `←` / `→` to step through
+- `1`–`5` to jump straight to one
 
-No automated tool can establish that a site is accessible. Automation reaches
-roughly a third of the WCAG success criteria — it can tell that an image has alt
-text, not whether the alt text is right.
+Every direction renders the *same* components and the *same* products. Only the
+identity changes, so what you are comparing is the identity and not a different
+page. Hero composition varies per direction because composition is part of an
+identity; everything below the hero is byte-for-byte the same markup.
 
-Curbcut states which checks did not run, in the same type size as the score, on
-every report. This is not modesty. In 2025 the FTC fined an overlay vendor $1M
-over claims that its automated product delivered compliance, and 22.6% of web
-accessibility lawsuits in H1 2025 targeted sites that already had an overlay
-installed. A scan that flatters you is worth less than nothing, because it is
-the input to a decision to stop working.
+## Stack
 
----
+- **Vite 8** + **React 19** + **TypeScript**
+- **Tailwind v4** (`@tailwindcss/vite`)
+- **shadcn/ui** (base-ui) — `src/components/ui/`
+- No database. Product data is a static JSON snapshot.
 
-## Repository layout
+Identity is a set of CSS custom properties per `html[data-identity="…"]` in
+`src/identity/identities.css`. Adding a sixth direction means adding one block
+there plus one entry in `src/data/identities.ts` — no component changes.
 
-```
-packages/
-  core/       The engine. WCAG data, legal regimes, the exposure model,
-              remediation recipes, report assembly. No DOM, no network.
-  scan/       Runs axe-core against a document. Browser and Node (jsdom).
-  web/        The site: landing page, scanner, report renderer, and the
-              122 generated reference pages.
-  worker/     Cloudflare Worker that fetches a page so the browser can scan it.
-  cli/        Bulk scanning and file output.
-scripts/      Content generation, bookmarklet build, post-build tidy.
-test/         Engine tests, a browser end-to-end run, and the dogfood audit.
-```
+## Data
 
-### How the browser scan works
+`src/data/products.json` — 64 real Bland-vendor products scraped from
+blandpro.shop's public JSON endpoints: titles, prices, compare-at prices, stock
+status and image URLs. Images are served from Shopify's CDN.
 
-A browser cannot read another origin's HTML, so a small Worker fetches it. After
-that, everything is local:
+`public/media/` — four real clips from his own product media, re-encoded to
+short muted loops (3.5 MB total) so the prototype is self-contained rather than
+hotlinking his CDN from another origin.
 
-1. **Every script is stripped** from the fetched HTML with `DOMParser` — the
-   scanned page's own JavaScript never executes.
-2. It is written into a **same-origin sandboxed frame** with a `<base>` tag, so
-   its real stylesheets load and the browser lays it out.
-3. **axe-core is injected into that frame** and run there.
-
-Step 3 is not incidental. axe validates its context against its own realm's
-`Document` and rejects one handed across from the parent; and colour contrast can
-only be computed where layout actually happened. Contrast is the failure on 83.9%
-of home pages, so a scanner that cannot see it is reporting a clean page that is
-not clean.
-
-That gives three render modes, and the mode travels with every result:
-
-| Mode | How | Level AA criteria testable |
-| --- | --- | --- |
-| `static-html` | Served markup, not laid out (CLI) | 18 of 55 |
-| `rendered-dom` | Served markup with real styles, scripts stripped (web) | 23 of 55 |
-| `live-dom` | The fully scripted page (bookmarklet) | 23 of 55 |
-
----
+To refresh the catalogue, re-run the extraction against
+`https://blandpro.shop/products.json?limit=250&page=N`.
 
 ## Running it
 
 ```bash
 npm install
-npm run build          # engine, content, bookmarklet, site
-npm test               # engine unit tests
-npm run dev            # local dev server
+npm run dev      # http://localhost:5173
+npm run build    # -> dist/
+npm run preview
 ```
-
-Browser checks (need Chromium):
-
-```bash
-node test/e2e.mjs      # full scan against a planted-failure fixture
-node test/dogfood.mjs  # audits our own pages with our own engine
-```
-
-### CLI
-
-```bash
-node packages/cli/bin/curbcut.mjs example.com
-node packages/cli/bin/curbcut.mjs --file urls.txt --format csv --out exposure.csv
-node packages/cli/bin/curbcut.mjs city.gov --jurisdiction US-PUBLIC --format markdown
-```
-
-Formats: `text`, `json`, `csv`, `markdown`. Bulk results are ranked by Exposure
-Index, so a scanned list sorts itself worst-first.
-
----
 
 ## Deploying
 
-One Vercel project. The static site and the fetch proxy ship together — the
-proxy is an Edge Function at `/api/fetch`, same origin as the site, so there is
-no CORS to configure and no second service.
+Netlify, configured in `netlify.toml`. Connect the repo and it builds with no
+environment variables — it is a fully static bundle.
 
-- Build command: `npm run build`
-- Output directory: `packages/web/dist`
-- The `api/` directory is picked up automatically.
+## What this is not
 
-Everything runs on the free Hobby plan. `packages/worker` is the same proxy
-packaged as a Cloudflare Worker if you prefer that; both import the identical
-implementation, so there is one copy of the SSRF guarding to keep correct. See
-`RUNBOOK.md`.
-
-## Data and sources
-
-Every legal statement carries a citation and a `verifiedOn` date in
-`packages/core/src/regimes.ts`. Population benchmarks come from the WebAIM
-Million, February 2026. Market rates in reports are published ranges, presented
-as such, and never as a prediction about any particular site.
-
-**Re-verify the legal data before relying on it.** Deadlines and penalties change,
-and the dataset carries the date it was last checked precisely so that staleness
-is visible rather than hidden.
-
-## Licensing
-
-Testing is powered by [axe-core](https://github.com/dequelabs/axe-core) by Deque
-Systems, licensed MPL-2.0. It is used unmodified as a dependency.
-
-## Not legal advice
-
-Curbcut reports what an automated engine can detect and how those failures map to
-published law. It is not legal advice, it is not a compliance certificate, and
-whether any regime applies to a particular organisation is a question for a
-lawyer who knows the facts.
+No cart, checkout, search, accounts, inventory or Storefront API wiring. Those
+are logistics, and logistics are a later conversation. This exists to answer one
+question: which of these should Bland look like?

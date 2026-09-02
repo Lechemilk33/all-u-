@@ -1,0 +1,320 @@
+/* ---------------------------------------------------------------------------
+   One storefront, five identities.
+
+   Each block below re-skins the *same* components: shadcn's own tokens plus a
+   small set of brand tokens the sections read directly. Nothing here changes
+   layout — layout variation is driven by `hero` in src/data/identities.ts — so
+   what you see when you switch is the identity, not a different page.
+   ------------------------------------------------------------------------ */
+
+:root {
+  --brand-display: 'Archivo', system-ui, sans-serif;
+  --brand-body: 'Archivo', system-ui, sans-serif;
+  --brand-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --brand-accent: #ff5c1a;
+  --brand-accent-fg: #ffffff;
+  --brand-ink: #0f0f0e;
+  --brand-paper: #ffffff;
+
+  --brand-display-weight: 800;
+  --brand-display-tracking: -0.03em;
+  --brand-display-transform: none;
+  --brand-display-leading: 0.92;
+
+  --brand-kicker-tracking: 0.24em;
+  --brand-kicker-transform: uppercase;
+  --brand-kicker-size: 0.6875rem;
+
+  --brand-card-radius: 0px;
+  --brand-card-border: 1px solid var(--border);
+  --brand-card-bg: var(--card);
+  --brand-card-shadow: none;
+  --brand-card-pad: 0px;
+  --brand-img-bg: #f4f3f1;
+  --brand-img-fit: contain;
+
+  --brand-rule: 1px solid var(--border);
+  --brand-section-gap: 6rem;
+  --brand-texture: none;
+  --brand-hero-overlay: linear-gradient(180deg, rgb(0 0 0 / 0.15), rgb(0 0 0 / 0.55));
+  --brand-btn-radius: 0px;
+  --brand-badge-radius: 0px;
+  --brand-price-family: var(--brand-mono);
+  --brand-nav-transform: uppercase;
+  --brand-nav-tracking: 0.12em;
+  --brand-nav-weight: 600;
+}
+
+/* ---------------------------------- 1. CONCRETE ------------------------- */
+html[data-identity='concrete'] {
+  --background: #e6e2dc;
+  --foreground: #0f0f0e;
+  --card: #f4f2ef;
+  --card-foreground: #0f0f0e;
+  --popover: #f4f2ef;
+  --popover-foreground: #0f0f0e;
+  --primary: #0f0f0e;
+  --primary-foreground: #f4f2ef;
+  --secondary: #d6d2cb;
+  --secondary-foreground: #0f0f0e;
+  --muted: #dedad4;
+  --muted-foreground: #6b665f;
+  --accent: #ff5c1a;
+  --accent-foreground: #ffffff;
+  --border: #c3bdb4;
+  --input: #c3bdb4;
+  --ring: #ff5c1a;
+  --radius: 0px;
+
+  --brand-display: 'Archivo Expanded', 'Archivo', sans-serif;
+  --brand-body: 'Archivo', sans-serif;
+  --brand-accent: #ff5c1a;
+  --brand-ink: #0f0f0e;
+  --brand-display-weight: 800;
+  --brand-display-tracking: -0.02em;
+  --brand-display-transform: uppercase;
+  --brand-display-leading: 0.88;
+  --brand-card-radius: 0px;
+  --brand-card-border: 1px solid #c3bdb4;
+  --brand-img-bg: #dedad4;
+  --brand-btn-radius: 0px;
+  --brand-badge-radius: 0px;
+  --brand-texture:
+    repeating-linear-gradient(0deg, rgb(15 15 14 / 0.035) 0 1px, transparent 1px 4px);
+  --brand-section-gap: 6.5rem;
+}
+
+/* ---------------------------------- 2. DEADPAN -------------------------- */
+html[data-identity='deadpan'] {
+  --background: #fafaf8;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #fafaf8;
+  --secondary: #f0efec;
+  --secondary-foreground: #111111;
+  --muted: #f2f1ee;
+  --muted-foreground: #6b6b6b;
+  --accent: #e4002b;
+  --accent-foreground: #ffffff;
+  --border: #e3e1dc;
+  --input: #e3e1dc;
+  --ring: #111111;
+  --radius: 0px;
+
+  --brand-display: 'Inter Tight', Inter, sans-serif;
+  --brand-body: 'Inter', sans-serif;
+  --brand-accent: #e4002b;
+  --brand-ink: #111111;
+  --brand-display-weight: 500;
+  --brand-display-tracking: -0.045em;
+  --brand-display-transform: none;
+  --brand-display-leading: 0.95;
+  --brand-kicker-tracking: 0.3em;
+  --brand-card-radius: 0px;
+  --brand-card-border: none;
+  --brand-card-bg: transparent;
+  --brand-img-bg: #f2f1ee;
+  --brand-btn-radius: 0px;
+  --brand-badge-radius: 0px;
+  --brand-price-family: 'Inter', sans-serif;
+  --brand-nav-transform: none;
+  --brand-nav-tracking: 0.005em;
+  --brand-nav-weight: 500;
+  --brand-section-gap: 9rem;
+  --brand-hero-overlay: linear-gradient(180deg, rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.25));
+}
+
+/* ---------------------------------- 3. XEROX ---------------------------- */
+html[data-identity='xerox'] {
+  --background: #f2f0eb;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #ffe500;
+  --secondary: #ffe500;
+  --secondary-foreground: #111111;
+  --muted: #e6e3dc;
+  --muted-foreground: #5a5751;
+  --accent: #ff3b00;
+  --accent-foreground: #ffffff;
+  --border: #111111;
+  --input: #111111;
+  --ring: #ff3b00;
+  --radius: 0px;
+
+  --brand-display: 'Anton', 'Archivo', sans-serif;
+  --brand-body: 'Archivo', sans-serif;
+  --brand-accent: #ff3b00;
+  --brand-ink: #111111;
+  --brand-display-weight: 400;
+  --brand-display-tracking: 0.005em;
+  --brand-display-transform: uppercase;
+  --brand-display-leading: 0.88;
+  --brand-kicker-tracking: 0.18em;
+  --brand-card-radius: 0px;
+  --brand-card-border: 2px solid #111111;
+  --brand-card-shadow: 4px 4px 0 #111111;
+  --brand-img-bg: #ffffff;
+  --brand-btn-radius: 0px;
+  --brand-badge-radius: 0px;
+  --brand-texture:
+    radial-gradient(circle at 1px 1px, rgb(17 17 17 / 0.16) 1px, transparent 0);
+  --brand-section-gap: 5.5rem;
+  --brand-hero-overlay: linear-gradient(180deg, rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.7));
+}
+
+/* ---------------------------------- 4. NOCTURNE ------------------------- */
+html[data-identity='nocturne'] {
+  --background: #08090b;
+  --foreground: #e9edf2;
+  --card: #101318;
+  --card-foreground: #e9edf2;
+  --popover: #101318;
+  --popover-foreground: #e9edf2;
+  --primary: #5be1c8;
+  --primary-foreground: #06251f;
+  --secondary: #15181f;
+  --secondary-foreground: #e9edf2;
+  --muted: #14171d;
+  --muted-foreground: #8b95a4;
+  --accent: #5be1c8;
+  --accent-foreground: #06251f;
+  --border: #1e232c;
+  --input: #1e232c;
+  --ring: #5be1c8;
+  --radius: 6px;
+
+  --brand-display: 'Space Grotesk', sans-serif;
+  --brand-body: 'Space Grotesk', sans-serif;
+  --brand-accent: #5be1c8;
+  --brand-accent-fg: #06251f;
+  --brand-ink: #e9edf2;
+  --brand-display-weight: 500;
+  --brand-display-tracking: -0.035em;
+  --brand-display-transform: none;
+  --brand-display-leading: 0.98;
+  --brand-kicker-tracking: 0.26em;
+  --brand-card-radius: 6px;
+  --brand-card-border: 1px solid #1e232c;
+  --brand-card-bg: #101318;
+  --brand-img-bg: #0c0f13;
+  --brand-btn-radius: 4px;
+  --brand-badge-radius: 3px;
+  --brand-texture:
+    radial-gradient(900px circle at 20% -10%, rgb(91 225 200 / 0.09), transparent 60%);
+  --brand-section-gap: 7.5rem;
+  --brand-hero-overlay:
+    linear-gradient(180deg, rgb(8 9 11 / 0.35) 0%, rgb(8 9 11 / 0.75) 55%, #08090b 100%);
+}
+
+/* ---------------------------------- 5. ARCADE --------------------------- */
+html[data-identity='arcade'] {
+  --background: #fff6e5;
+  --foreground: #1b1a17;
+  --card: #ffffff;
+  --card-foreground: #1b1a17;
+  --popover: #ffffff;
+  --popover-foreground: #1b1a17;
+  --primary: #e63329;
+  --primary-foreground: #ffffff;
+  --secondary: #1b62d6;
+  --secondary-foreground: #ffffff;
+  --muted: #f6ead2;
+  --muted-foreground: #6f6857;
+  --accent: #1b62d6;
+  --accent-foreground: #ffffff;
+  --border: #e2d3b4;
+  --input: #e2d3b4;
+  --ring: #e63329;
+  --radius: 14px;
+
+  --brand-display: 'Bricolage Grotesque', 'Archivo', sans-serif;
+  --brand-body: 'DM Sans', sans-serif;
+  --brand-accent: #e63329;
+  --brand-ink: #1b1a17;
+  --brand-display-weight: 800;
+  --brand-display-tracking: -0.035em;
+  --brand-display-transform: none;
+  --brand-display-leading: 0.94;
+  --brand-kicker-tracking: 0.14em;
+  --brand-card-radius: 16px;
+  --brand-card-border: 2px solid #1b1a17;
+  --brand-card-shadow: 0 4px 0 #1b1a17;
+  --brand-img-bg: #f6ead2;
+  --brand-btn-radius: 999px;
+  --brand-badge-radius: 999px;
+  --brand-price-family: 'DM Sans', sans-serif;
+  --brand-nav-weight: 700;
+  --brand-nav-tracking: 0.02em;
+  --brand-texture:
+    radial-gradient(circle at 1px 1px, rgb(27 26 23 / 0.07) 1px, transparent 0);
+  --brand-section-gap: 6rem;
+  --brand-hero-overlay: linear-gradient(180deg, rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.5));
+}
+
+/* --------------------------- shared brand primitives -------------------- */
+.brand-display {
+  font-family: var(--brand-display);
+  font-weight: var(--brand-display-weight);
+  letter-spacing: var(--brand-display-tracking);
+  text-transform: var(--brand-display-transform);
+  line-height: var(--brand-display-leading);
+}
+.brand-kicker {
+  font-family: var(--brand-mono);
+  font-size: var(--brand-kicker-size);
+  letter-spacing: var(--brand-kicker-tracking);
+  text-transform: var(--brand-kicker-transform);
+  font-weight: 500;
+}
+.brand-nav {
+  font-family: var(--brand-body);
+  text-transform: var(--brand-nav-transform);
+  letter-spacing: var(--brand-nav-tracking);
+  font-weight: var(--brand-nav-weight);
+}
+.brand-price { font-family: var(--brand-price-family); font-variant-numeric: tabular-nums; }
+.brand-card {
+  border-radius: var(--brand-card-radius);
+  border: var(--brand-card-border);
+  background: var(--brand-card-bg);
+  box-shadow: var(--brand-card-shadow);
+}
+.brand-btn { border-radius: var(--brand-btn-radius); }
+.brand-badge { border-radius: var(--brand-badge-radius); }
+.brand-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--brand-texture);
+  background-size: 4px 4px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+html[data-identity='nocturne'] .brand-texture::before { background-size: cover; }
+
+body {
+  font-family: var(--brand-body);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Switching identities should feel like a cut, not a crossfade — but the
+   colour transition keeps it from being jarring on a big screen. */
+body, .brand-card, header, footer {
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  body, .brand-card, header, footer { transition: none; }
+}
+
+html[data-identity='concrete'] .brand-display { font-stretch: 118%; }
+html[data-identity='deadpan'] .brand-display { font-stretch: 100%; }

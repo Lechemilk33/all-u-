@@ -1,28 +1,35 @@
 {
-  "name": "curbcut",
+  "name": "all-u-",
   "private": true,
-  "version": "0.1.0",
-  "description": "Curbcut \u2014 see your website the way a plaintiff's lawyer does.",
-  "license": "UNLICENSED",
+  "version": "0.0.0",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
-  "engines": {
-    "node": ">=20"
-  },
   "scripts": {
-    "build": "npm run build:core && npm run build -w @curbcut/scan && npm run content && npm run build:audit && npm run build -w @curbcut/web && node scripts/finalize-build.mjs",
-    "build:core": "npm run build -w @curbcut/core",
-    "content": "node scripts/generate-content.mjs && node scripts/build-bookmarklet.mjs",
-    "dev": "npm run dev -w @curbcut/web",
-    "test": "node --test packages/core/test/*.test.mjs",
-    "typecheck": "tsc -b --pretty packages/core packages/scan packages/cli",
-    "scan": "node packages/cli/bin/curbcut.mjs",
-    "build:audit": "vite build -c packages/web/vite.audit.config.ts"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.7.0",
+    "@fontsource-variable/geist": "^5.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.39.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "shadcn": "^4.19.1",
+    "tailwind-merge": "^3.6.0",
+    "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
-    "playwright": "^1.62.1",
-    "typescript": "^5.7.3"
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "oxlint": "^1.79.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2"
   }
 }
