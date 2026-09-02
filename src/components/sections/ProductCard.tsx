@@ -1,50 +1,58 @@
 import { money, type Product } from '@/data/catalog'
 
-export function ProductCard({ p, priority = false }: { p: Product; priority?: boolean }) {
+/**
+ * `ruled` swaps the card from a floating tile to a cell in a ruled grid — the
+ * difference between the Gallery and Index/Grid directions. Everything else
+ * (padding, image ground, type size) comes from identity tokens.
+ */
+export function ProductCard({
+  p,
+  ruled = false,
+  priority = false,
+}: {
+  p: Product
+  ruled?: boolean
+  priority?: boolean
+}) {
   const onSale = p.compareAt != null && p.compareAt > p.price
-  const off = onSale ? Math.round(((p.compareAt! - p.price) / p.compareAt!) * 100) : 0
   return (
-    <a href={p.url} target="_blank" rel="noreferrer" className="group block">
-      <div
-        className="brand-card relative overflow-hidden"
-        style={{ background: 'var(--brand-img-bg)' }}
-      >
+    <a
+      href={p.url}
+      target="_blank"
+      rel="noreferrer"
+      className={`group block ${ruled ? 'border-b border-r p-4' : ''}`}
+    >
+      <div className="relative overflow-hidden" style={{ background: 'var(--brand-img-bg)' }}>
         <div className="aspect-square">
           <img
             src={p.image}
             alt={p.title}
             loading={priority ? 'eager' : 'lazy'}
-            className="size-full object-contain p-5 transition-transform duration-500 group-hover:scale-[1.045]"
+            className="size-full object-contain transition-transform duration-500 group-hover:scale-[1.04]"
+            style={{ padding: 'var(--brand-img-pad)' }}
           />
         </div>
         {!p.available && (
-          <span
-            className="brand-badge brand-kicker absolute left-3 top-3 px-2.5 py-1"
-            style={{ background: 'var(--foreground)', color: 'var(--background)' }}
-          >
+          <span className="brand-kicker absolute left-2.5 top-2.5 bg-black px-2 py-1 text-white">
             Sold out
           </span>
         )}
-        {onSale && p.available && (
-          <span
-            className="brand-badge brand-kicker absolute left-3 top-3 px-2.5 py-1"
-            style={{ background: 'var(--brand-accent)', color: 'var(--brand-accent-fg)' }}
-          >
-            −{off}%
-          </span>
-        )}
       </div>
-      <div className="mt-3.5 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="brand-kicker mb-1 opacity-45">{p.category}</div>
-          <h3 className="brand-nav truncate text-[0.9rem] normal-case tracking-normal">{p.title}</h3>
-        </div>
-        <div className="brand-price shrink-0 text-right text-[0.9rem]">
-          <div>{money(p.price)}</div>
-          {onSale && (
-            <div className="text-[0.75rem] line-through opacity-40">{money(p.compareAt!)}</div>
-          )}
-        </div>
+      <div className={`flex items-baseline justify-between gap-3 ${ruled ? 'mt-3' : 'mt-3.5'}`}>
+        <span
+          className="truncate opacity-80"
+          style={{ fontSize: 'var(--brand-label-size)' }}
+          title={p.title}
+        >
+          {p.title}
+        </span>
+        <span
+          className="brand-price shrink-0 opacity-80"
+          style={{ fontSize: 'var(--brand-label-size)' }}
+        >
+          {money(p.price)}
+          {onSale && <span className="ml-1.5 line-through opacity-35">{money(p.compareAt!)}</span>}
+        </span>
       </div>
     </a>
   )

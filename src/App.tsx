@@ -2,7 +2,7 @@ import { IdentityProvider } from '@/lib/identity'
 import { IdentitySwitcher } from '@/components/IdentitySwitcher'
 import { Announcement, Header } from '@/components/sections/Header'
 import { Hero } from '@/components/sections/Hero'
-import { Builds, Catalog, ConcreteFeature, Footer, Statement } from '@/components/sections/Sections'
+import { Builds, Catalog, ConcreteFeature, Details, Footer } from '@/components/sections/Sections'
 
 export default function App() {
   return (
@@ -13,8 +13,8 @@ export default function App() {
         <main>
           <Hero />
           <ConcreteFeature />
-          <Statement />
           <Catalog />
+          <Details />
           <Builds />
         </main>
         <Footer />

@@ -1,13 +1,7 @@
-import { ArrowRight } from 'lucide-react'
 import { useIdentity } from '@/lib/identity'
-import { videos, concreteLine, money } from '@/data/catalog'
-import { BlandMark } from '@/components/BlandMark'
+import { videos, concreteLine, byCategory, money } from '@/data/catalog'
+import { DoubleFace, Wordmark } from '@/components/BlandMark'
 
-/**
- * Clip choice is per-hero on purpose: v0 is a gritty night rail, v1 a macro of a
- * bearing, v2 a wide skatepark, v3 a dark rail. A close-up dies in a tall crop
- * and a wide shot dies in a letterbox, so each layout gets footage that holds up.
- */
 function Video({ i = 0, className = '' }: { i?: number; className?: string }) {
   const v = videos[i % videos.length]
   return (
@@ -24,189 +18,136 @@ function Video({ i = 0, className = '' }: { i?: number; className?: string }) {
   )
 }
 
-function Cta({ label, alt, onDark = false }: { label: string; alt: string; onDark?: boolean }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3">
-      <a
-        href="#catalog"
-        className="brand-btn brand-nav inline-flex items-center gap-2 px-7 py-3.5 text-[0.8rem]"
-        style={{ background: 'var(--brand-accent)', color: 'var(--brand-accent-fg)' }}
-      >
-        {label} <ArrowRight className="size-4" />
-      </a>
-      <a
-        href="#story"
-        className="brand-btn brand-nav inline-flex items-center gap-2 border px-7 py-3.5 text-[0.8rem]"
-        style={
-          onDark
-            ? { borderColor: 'rgb(255 255 255 / 0.75)', color: '#fff' }
-            : { borderColor: 'var(--foreground)' }
-        }
-      >
-        {alt}
-      </a>
-    </div>
-  )
-}
-
+/**
+ * No headlines anywhere. Bland's own decks, tees and grip tape carry a wordmark
+ * and a face and nothing else, so the heroes below carry a wordmark, a piece of
+ * footage and — at most — a factual line. Everything that could be mistaken for
+ * a slogan has been removed on purpose.
+ */
 export function Hero() {
   const { identity } = useIdentity()
-  const c = identity.copy
-  const headline = c.headline.split('\n')
 
-  /* --- SPLIT: video beside a spec block. Reads like a materials supplier. -- */
-  if (identity.hero === 'split') {
-    const specs = concreteLine.slice(0, 3)
+  /* --- INDEX: no hero. A rule, the wordmark, straight into product. ------- */
+  if (identity.hero === 'index') {
+    const first = [...concreteLine.slice(0, 3), ...byCategory('Decks').slice(0, 3)]
     return (
-      <section className="brand-texture relative border-b">
-        <div className="mx-auto grid max-w-[1400px] items-stretch gap-0 lg:grid-cols-2">
-          <div className="relative order-2 min-h-[380px] lg:order-1 lg:min-h-[620px]">
-            <Video i={2} className="absolute inset-0 size-full object-cover object-center" />
+      <section className="border-b">
+        <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
+          <div className="flex items-baseline justify-between gap-6 border-b py-5">
+            <span className="brand-kicker opacity-45">Fingerboards · Concrete · Apparel</span>
+            <span className="brand-kicker opacity-45">Lincoln, CA</span>
           </div>
-          <div className="order-1 flex flex-col justify-center gap-7 px-6 py-16 lg:order-2 lg:px-14 lg:py-24">
-            <span className="brand-kicker opacity-60">{c.kicker}</span>
-            <h1 className="brand-display text-[clamp(2.6rem,6vw,4.6rem)]">
-              {headline.map((l, i) => (
-                <span key={i} className="block">{l}</span>
-              ))}
-            </h1>
-            <p className="max-w-md text-[1.02rem] leading-relaxed opacity-70">{c.sub}</p>
-            <Cta label={c.cta} alt={c.ctaAlt} />
-            <div className="mt-4 grid grid-cols-3 gap-px border-t pt-6">
-              {specs.map((p) => (
-                <div key={p.id}>
-                  <div className="brand-kicker mb-1 opacity-50">{p.title.split(' - ')[1] ?? 'Cast'}</div>
-                  <div className="brand-price text-lg">{money(p.price)}</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+            {first.map((p) => (
+              <a
+                key={p.id}
+                href={p.url}
+                target="_blank"
+                rel="noreferrer"
+                className="group border-b border-r p-4 last:border-r-0"
+              >
+                <div className="aspect-square" style={{ background: 'var(--brand-img-bg)' }}>
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    className="size-full object-contain p-3 transition-transform duration-500 group-hover:scale-[1.05]"
+                  />
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  /* --- EDITORIAL: type carries it. Video is a small, quiet inset. --------- */
-  if (identity.hero === 'editorial') {
-    return (
-      <section className="relative border-b">
-        <div className="mx-auto max-w-[1400px] px-6 pb-20 pt-24 lg:px-14 lg:pb-28 lg:pt-36">
-          <span className="brand-kicker opacity-45">{c.kicker}</span>
-          <h1 className="brand-display mt-10 text-[clamp(3.4rem,11vw,9.5rem)]">
-            {headline.map((l, i) => (
-              <span key={i} className="block">{l}</span>
+                <div className="mt-3 flex items-baseline justify-between gap-2">
+                  <span className="truncate text-[0.72rem] opacity-70">{p.title}</span>
+                  <span className="brand-price shrink-0 text-[0.72rem]">{money(p.price)}</span>
+                </div>
+              </a>
             ))}
-          </h1>
-          <div className="mt-16 grid gap-12 border-t pt-10 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
-            <div className="flex flex-col gap-8">
-              <p className="max-w-sm text-[1.05rem] leading-relaxed opacity-65">{c.sub}</p>
-              <Cta label={c.cta} alt={c.ctaAlt} />
-            </div>
-            <Video className="aspect-[16/10] w-full object-cover" i={1} />
           </div>
         </div>
       </section>
     )
   }
 
-  /* --- COLLAGE: flyer energy. Overlapping slabs, rotated stickers. -------- */
-  if (identity.hero === 'collage') {
+  /* --- GALLERY: one clip, enormous margins, a caption. -------------------- */
+  if (identity.hero === 'gallery') {
     return (
-      <section className="relative overflow-hidden border-b-2" style={{ borderColor: 'var(--foreground)' }}>
-        <div className="relative min-h-[620px]">
-          <Video className="absolute inset-0 size-full object-cover grayscale contrast-125" i={0} />
-          <div className="absolute inset-0" style={{ background: 'var(--brand-hero-overlay)' }} />
-          <div className="brand-texture absolute inset-0" />
-          <div className="relative mx-auto flex min-h-[620px] max-w-[1400px] flex-col justify-center px-6 py-20 lg:px-14">
-            <span
-              className="brand-kicker mb-5 w-fit px-3 py-1.5"
-              style={{ background: 'var(--secondary)', color: 'var(--secondary-foreground)' }}
-            >
-              {c.kicker}
-            </span>
-            <h1
-              className="brand-display text-[clamp(3.6rem,13vw,10rem)]"
-              style={{ color: 'var(--secondary)' }}
-            >
-              {headline.map((l, i) => (
-                <span key={i} className="block">{l}</span>
-              ))}
-            </h1>
-            <p className="mt-6 max-w-lg text-[1.02rem] leading-relaxed text-white/85">{c.sub}</p>
-            <div className="mt-9">
-              <Cta label={c.cta} alt={c.ctaAlt} onDark />
-            </div>
-          </div>
-          <div
-            className="absolute right-5 top-16 hidden rotate-12 border-2 px-6 py-3 lg:block"
-            style={{ background: 'var(--secondary)', borderColor: 'var(--foreground)' }}
-          >
-            <span className="brand-display text-xl">SMALL BATCH</span>
-          </div>
-          <div
-            className="absolute bottom-12 right-10 hidden -rotate-6 items-center gap-2 border-2 px-5 py-2.5 lg:flex"
-            style={{ background: 'var(--accent)', borderColor: 'var(--foreground)', color: '#fff' }}
-          >
-            <BlandMark size={20} />
-            <span className="brand-display text-lg">LINCOLN CA</span>
+      <section>
+        <div className="mx-auto max-w-[1400px] px-6 pb-24 pt-24 lg:px-20 lg:pb-32 lg:pt-32">
+          <Video className="aspect-[3/2] w-full object-cover" i={2} />
+          <div className="mt-6 flex items-baseline justify-between">
+            <span className="brand-kicker opacity-40">Bland Fingerboards</span>
+            <span className="brand-kicker opacity-40">Lincoln, California</span>
           </div>
         </div>
       </section>
     )
   }
 
-  /* --- CINEMATIC: dark room, one light, product-led. ---------------------- */
-  if (identity.hero === 'cinematic') {
+  /* --- INVERSE: the garment. Faces large, white on black. ----------------- */
+  if (identity.hero === 'inverse') {
     return (
-      <section className="brand-texture relative">
-        <div className="relative min-h-[680px]">
-          <Video className="absolute inset-0 size-full object-cover opacity-55" i={3} />
-          <div className="absolute inset-0" style={{ background: 'var(--brand-hero-overlay)' }} />
-          <div className="relative mx-auto flex min-h-[680px] max-w-[1400px] flex-col items-center justify-center px-6 py-24 text-center">
-            <span className="brand-kicker" style={{ color: 'var(--brand-accent)' }}>
-              {c.kicker}
-            </span>
-            <h1 className="brand-display mt-8 text-[clamp(3rem,8vw,6.5rem)]">
-              {headline.map((l, i) => (
-                <span key={i} className="block">{l}</span>
-              ))}
-            </h1>
-            <p className="mt-7 max-w-xl text-[1.05rem] leading-relaxed opacity-65">{c.sub}</p>
-            <div className="mt-10">
-              <Cta label={c.cta} alt={c.ctaAlt} onDark />
-            </div>
+      <section className="border-b">
+        <div className="mx-auto grid max-w-[1400px] items-center gap-14 px-6 py-24 lg:grid-cols-2 lg:px-14 lg:py-28">
+          <div className="flex justify-center lg:justify-start">
+            <DoubleFace size={300} />
+          </div>
+          <Video className="aspect-[4/3] w-full object-cover" i={0} />
+        </div>
+      </section>
+    )
+  }
+
+  /* --- BLEED: footage edge to edge, the wordmark, nothing more. ----------- */
+  if (identity.hero === 'bleed') {
+    return (
+      <section className="relative">
+        <div className="relative h-[86vh] min-h-[560px]">
+          <Video className="absolute inset-0 size-full object-cover" i={3} />
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(180deg,rgb(0 0 0/.25),rgb(0 0 0/.15) 55%,#000)' }}
+          />
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-6 p-6 lg:p-12">
+            <Wordmark className="text-white" scale={2.4} />
+            <span className="brand-kicker hidden text-white/55 sm:block">Lincoln, California</span>
           </div>
         </div>
       </section>
     )
   }
 
-  /* --- STACKED: shop-counter warmth, badges, framed video. ---------------- */
+  /* --- GRID: visible structure. Ruled cells, one holds footage. ----------- */
+  const cells = concreteLine.slice(0, 2)
   return (
-    <section className="brand-texture relative border-b">
-      <div className="mx-auto max-w-[1400px] px-6 py-20 lg:px-14 lg:py-24">
-        <div className="flex flex-col items-center text-center">
-          <span
-            className="brand-kicker brand-badge mb-6 px-4 py-2"
-            style={{ background: 'var(--secondary)', color: 'var(--secondary-foreground)' }}
-          >
-            {c.kicker}
-          </span>
-          <h1 className="brand-display max-w-4xl text-[clamp(3rem,8vw,6rem)]">
-            {headline.map((l, i) => (
-              <span key={i} className="block">{l}</span>
-            ))}
-          </h1>
-          <p className="mt-7 max-w-lg text-[1.05rem] leading-relaxed opacity-70">{c.sub}</p>
-          <div className="mt-9">
-            <Cta label={c.cta} alt={c.ctaAlt} />
+    <section className="border-b">
+      <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
+        <div className="grid border-x lg:grid-cols-4">
+          <div className="border-b lg:col-span-2 lg:border-b-0 lg:border-r">
+            <Video className="aspect-[3/2] size-full object-cover" i={2} />
           </div>
-        </div>
-        <div
-          className="brand-card mt-16 overflow-hidden"
-          style={{ borderRadius: 'var(--brand-card-radius)' }}
-        >
-          <Video className="aspect-[21/8] w-full object-cover" i={2} />
+          {cells.map((p, i) => (
+            <a
+              key={p.id}
+              href={p.url}
+              target="_blank"
+              rel="noreferrer"
+              className={`group flex flex-col justify-between p-6 ${
+                i < cells.length - 1 ? 'border-b lg:border-b-0 lg:border-r' : ''
+              }`}
+            >
+              <span className="brand-kicker opacity-40">Concrete</span>
+              <div className="my-6 aspect-square" style={{ background: 'var(--brand-img-bg)' }}>
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  className="size-full object-contain p-4 transition-transform duration-500 group-hover:scale-[1.05]"
+                />
+              </div>
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="truncate text-[0.78rem] opacity-75">
+                  {p.title.split(' - ').pop()}
+                </span>
+                <span className="brand-price text-[0.78rem]">{money(p.price)}</span>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </section>
