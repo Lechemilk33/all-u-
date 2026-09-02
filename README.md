@@ -87,14 +87,14 @@ npm run preview
 
 ## Deploying
 
-Netlify, configured in `netlify.toml`. Static bundle, no environment variables.
+Vercel, configured in `vercel.json`. Static bundle, no environment variables.
 
 ```bash
-npx netlify deploy --prod --dir=dist
+npx vercel deploy --prod
 ```
 
-Needs `NETLIFY_AUTH_TOKEN` in the environment, or `npx netlify login` on a
-machine with a browser.
+Needs `VERCEL_TOKEN` in the environment, or `npx vercel login` on a
+machine with a browser. `npx vercel deploy --temporary` needs neither.
 
 ## What this is not
 
