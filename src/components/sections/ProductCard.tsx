@@ -9,10 +9,13 @@ export function ProductCard({
   p,
   ruled = false,
   priority = false,
+  useShort = false,
 }: {
   p: Product
   ruled?: boolean
   priority?: boolean
+  /** Inside a category column the prefix is redundant — show the short name. */
+  useShort?: boolean
 }) {
   const onSale = p.compareAt != null && p.compareAt > p.price
   return (
@@ -44,7 +47,7 @@ export function ProductCard({
           style={{ fontSize: 'var(--brand-label-size)' }}
           title={p.title}
         >
-          {p.title}
+          {useShort ? p.short : p.title}
         </span>
         <span
           className="brand-price shrink-0 opacity-80"

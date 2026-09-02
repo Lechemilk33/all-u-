@@ -4,7 +4,10 @@ export type Product = {
   id: number
   handle: string
   title: string
+  /** Title with the category prefix removed, for use inside a category column. */
+  short: string
   vendor: string
+  family: Family
   category: string
   price: number
   compareAt: number | null
@@ -17,44 +20,44 @@ export type Product = {
   variantCount: number
 }
 
+export type Family = 'Fingerboards' | 'Ramps' | 'Apparel'
+
 export const products = raw as Product[]
 
-export const categories = [
-  'Obstacles',
-  'Completes',
-  'Decks',
-  'Trucks',
-  'Wheels',
-  'Grip Tape',
-  'Custom Builds',
-  'Apparel',
-] as const
+/**
+ * Bland makes three things: fingerboards, the ramps you ride them on, and
+ * apparel. The scooter builds and scooter parts on blandpro.shop are the
+ * retail shop's business, not this brand's, so they are not in this data set.
+ */
+export const families: { name: Family; subs: string[] }[] = [
+  { name: 'Fingerboards', subs: ['Completes', 'Decks', 'Trucks', 'Wheels', 'Grip Tape'] },
+  { name: 'Ramps', subs: ['Concrete', '3D Printed', 'Marble'] },
+  { name: 'Apparel', subs: ['Tees', 'Hoodies', 'Headwear'] },
+]
 
+export const byFamily = (f: Family) => products.filter((p) => p.family === f)
 export const byCategory = (c: string) => products.filter((p) => p.category === c)
 
-/** The concrete obstacle line — the part of the range nobody can drop-ship. */
-export const concreteLine = products.filter(
-  (p) => p.category === 'Obstacles' && /concrete/i.test(p.title + p.blurb),
-)
+/** Completes and decks — the centre of the range and the top of every page. */
+export const flagship = [...byCategory('Completes'), ...byCategory('Decks')]
 
 export const money = (n: number) =>
   n % 1 === 0 ? `$${n.toFixed(0)}` : `$${n.toFixed(2)}`
 
 /**
- * Real video from blandpro.shop's own product media, re-encoded to short muted
- * loops and vendored into /public/media so the mockup is self-contained and
- * does not hotlink his Shopify CDN from a Netlify origin.
+ * Exactly one clip on blandpro.shop is fingerboard footage — the one on the
+ * Fingerboards collection page. The others are scooter, skateboard and kendama,
+ * so rather than pad with those, this is four scenes cut out of that one clip.
  */
 export const videos = [
-  { src: '/media/v1.mp4', poster: '/media/v1.jpg' },
-  { src: '/media/v2.mp4', poster: '/media/v2.jpg' },
-  { src: '/media/v3.mp4', poster: '/media/v3.jpg' },
-  { src: '/media/v4.mp4', poster: '/media/v4.jpg' },
+  { src: '/media/fb1.mp4', poster: '/media/fb1.jpg' },
+  { src: '/media/fb2.mp4', poster: '/media/fb2.jpg' },
+  { src: '/media/fb3.mp4', poster: '/media/fb3.jpg' },
+  { src: '/media/fb4.mp4', poster: '/media/fb4.jpg' },
 ]
 
 export const shop = {
   name: 'Bland',
-  parent: 'Bland Pro Shop',
   address: '2290 Nicolaus Rd, Suite 103, Lincoln, CA 95648',
   hours: 'Wed – Sun, 1 – 6pm',
   phone: '(916) 415-8736',

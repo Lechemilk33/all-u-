@@ -6,6 +6,20 @@ Pro Shop retail site, each rendered against the real Bland catalogue.
 A design review tool, not a store. No cart, no checkout, no accounts, no
 database. Every product links out to the live page on blandpro.shop.
 
+## What is in the range
+
+Bland makes three things, and this data set contains only those three:
+
+| Family | | |
+| --- | --- | --- |
+| **Fingerboards** | 13 | Completes, Decks, Trucks, Wheels, Grip Tape |
+| **Ramps** | 8 | Concrete, 3D Printed, Marble |
+| **Apparel** | 15 | Tees, Hoodies, Headwear |
+
+The custom scooter builds, scooter parts and shop merch on blandpro.shop are
+the retail shop's business, not this brand's, and are excluded. Fingerboards
+lead every hero and sit first on every page.
+
 ## The constraint
 
 Bland is monochrome. The apparel is black with a white wordmark and white line
@@ -23,18 +37,17 @@ ground and whether the grid is ruled — not by palette or voice.
 
 | | Direction | What it is |
 | --- | --- | --- |
-| 1 | **Index** | A parts index. No hero, ruled cells, tiny type, everything on screen at once. |
-| 2 | **Gallery** | Few things, large, on white. Captions kept to a whisper. |
-| 3 | **Inverse** | The hoodie as a website. White on black, the two-face mark large. |
-| 4 | **Bleed** | Footage edge to edge. The wordmark and one line of fact. |
-| 5 | **Grid** | Visible structure — hairlines, hard alignment, everything in a cell. |
+| 1 | **Gallery** | Few things, large, on white. Captions kept to a whisper. |
+| 2 | **Inverse** | The hoodie as a website. White on black, the mark large. |
+| 3 | **Bleed** | Fingerboard footage edge to edge. The wordmark and one line of fact. |
+| 4 | **Grid** | Visible structure — hairlines, hard alignment, everything in a cell. |
 
 Each carries a thesis and an honest note on what it costs. Open **Notes** in the
 switcher.
 
 ## Switching
 
-Click a name in the bar at the bottom, use `←`/`→`, or press `1`–`5`.
+Click a name in the bar at the bottom, use `←`/`→`, or press `1`–`4`.
 
 Every direction renders the same components and the same products. Hero
 composition differs because composition is part of a direction; everything
@@ -42,12 +55,14 @@ below the hero is the same markup, re-tokenised.
 
 ## Marks
 
-`src/components/BlandMark.tsx` holds three, taken from what is actually printed
-on his product: the single round face from the grip tape and deck bottoms, the
-two-face "Dissociate" lockup from the tee and hoodie, and BLAND set wide and
-bold as it appears across the chest. All are single-colour and inherit
-`currentColor`, because the brand is black on white or white on black and never
-anything else.
+`public/brand/` holds his real artwork, pulled from blandpro.shop:
+`bland_filled_logo_200px.png` (the filled disc with BLAND set inside it) and
+`BLAND_HORI_LOGO_WHITE_2.png` (the current horizontal lockup). Both ship
+white-on-transparent; the `-inv` files are those same files with RGB flipped
+and alpha untouched. Nothing is redrawn — each is a light and a dark cut of the
+same asset. The disc is the site mark, since it reads BLAND; the horizontal
+lockup reads BLAND PRO SHOP and so appears only where the parent shop is being
+credited.
 
 ## Stack
 
@@ -66,13 +81,14 @@ after our import, so an unqualified selector loses every shared token.
 
 ## Data
 
-`src/data/products.json` — 64 real Bland-vendor products from blandpro.shop's
-public JSON: titles, prices, compare-at prices, stock status, image URLs.
+`src/data/products.json` — 36 real Bland products from blandpro.shop's public JSON: titles, prices, compare-at prices, stock status, image URLs.
 Images are served from Shopify's CDN.
 
-`public/media/` — four clips from his own product media, re-encoded to short
-muted loops (2.6 MB total) and vendored so the build is self-contained rather
-than hotlinking his CDN from another origin. They were already black and white.
+`public/media/` — exactly one clip on blandpro.shop is fingerboard footage: the
+one on the Fingerboards collection page. The others are scooter, skateboard and
+kendama. Rather than pad with those, these are four scenes cut out of that one
+clip and re-encoded as muted loops (772 KB total), vendored so the build is
+self-contained. It was already black and white.
 
 Refresh the catalogue against `https://blandpro.shop/products.json?limit=250&page=N`.
 

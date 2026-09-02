@@ -1,7 +1,7 @@
 import { Menu, Search, ShoppingBag } from 'lucide-react'
 import { Wordmark } from '@/components/BlandMark'
 import { useIdentity } from '@/lib/identity'
-import { categories } from '@/data/catalog'
+import { families } from '@/data/catalog'
 
 export function Announcement() {
   const { identity } = useIdentity()
@@ -25,11 +25,14 @@ export function Header() {
         </button>
         <Wordmark />
         <nav className="ml-6 hidden items-center gap-6 lg:flex">
-          {categories.slice(0, 6).map((c) => (
-            <a key={c} href="#catalog" className="brand-nav opacity-55 hover:opacity-100">
-              {c}
+          {families.map((f) => (
+            <a key={f.name} href={`#${f.name.toLowerCase()}`} className="brand-nav opacity-55 hover:opacity-100">
+              {f.name}
             </a>
           ))}
+          <a href="#all" className="brand-nav opacity-55 hover:opacity-100">
+            Everything
+          </a>
         </nav>
         <div className="ml-auto flex items-center gap-5">
           <Search className="size-[1.05rem] opacity-60" />

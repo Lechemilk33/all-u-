@@ -2,7 +2,14 @@ import { IdentityProvider } from '@/lib/identity'
 import { IdentitySwitcher } from '@/components/IdentitySwitcher'
 import { Announcement, Header } from '@/components/sections/Header'
 import { Hero } from '@/components/sections/Hero'
-import { Builds, Catalog, ConcreteFeature, Details, Footer } from '@/components/sections/Sections'
+import {
+  Apparel,
+  Details,
+  Everything,
+  Fingerboards,
+  Footer,
+  Ramps,
+} from '@/components/sections/Sections'
 
 export default function App() {
   return (
@@ -12,10 +19,12 @@ export default function App() {
         <Header />
         <main>
           <Hero />
-          <ConcreteFeature />
-          <Catalog />
+          {/* Fingerboards first on every direction — it is what the brand is. */}
+          <Fingerboards />
+          <Ramps />
           <Details />
-          <Builds />
+          <Apparel />
+          <Everything />
         </main>
         <Footer />
       </div>
