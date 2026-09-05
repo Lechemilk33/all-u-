@@ -9,6 +9,16 @@ import {
 
 const freshStore = () => new Store(join(mkdtempSync(join(tmpdir(), 'flip-')), 'test.db'));
 
+test('the store creates its own directory, so a fresh clone starts', () => {
+  // The data directory is gitignored, so on a first run it does not exist.
+  // SQLite will not create missing parents and fails with a bare "unable to open
+  // database file", which says nothing about the cause.
+  const nested = join(mkdtempSync(join(tmpdir(), 'flip-first-')), 'data', 'deeper', 'flip.db');
+  const s = new Store(nested);
+  assert.equal(s.stats().items, 0);
+  s.close();
+});
+
 const T0 = 1_700_000_000;
 const offer = (over = {}) => ({
   slot: 0, itemId: 573, state: 'BUYING', price: 1466,

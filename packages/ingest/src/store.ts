@@ -1,3 +1,5 @@
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { ItemRef, LatestQuote } from '@flip/core';
 
@@ -24,7 +26,24 @@ export class Store {
   readonly db: DatabaseSync;
 
   constructor(path: string) {
-    this.db = new DatabaseSync(path);
+    // SQLite will not create missing parent directories, and the data directory
+    // is gitignored — so on a fresh clone the first run would otherwise die with
+    // a bare "unable to open database file" and no indication of the cause.
+    const dir = dirname(path);
+    try {
+      mkdirSync(dir, { recursive: true });
+    } catch (cause) {
+      throw new Error(`cannot create the database directory ${dir}: ${String(cause)}`);
+    }
+
+    try {
+      this.db = new DatabaseSync(path);
+    } catch (cause) {
+      throw new Error(
+        `cannot open the database at ${path}: ${String(cause)}\n`
+        + 'Check that the path is writable, or set FLIP_DB to somewhere it is.',
+      );
+    }
     this.db.exec('PRAGMA journal_mode = WAL');
     this.db.exec('PRAGMA synchronous = NORMAL');
     this.migrate();
