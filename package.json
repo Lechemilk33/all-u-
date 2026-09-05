@@ -1,18 +1,29 @@
 {
   "name": "osrs-flip-finder",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Grand Exchange flip finder built on the OSRS Wiki real-time prices feed.",
   "license": "UNLICENSED",
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
+    "build": "tsc -b && npm run build:web",
+    "build:web": "node scripts/build-web.mjs",
     "typecheck": "tsc -b --pretty",
-    "test": "node --test"
+    "test": "node --test packages/core/test/*.test.mjs",
+    "start": "node packages/server/dist/main.js",
+    "backfill": "node scripts/backfill.mjs",
+    "verify": "node scripts/verify-live.mjs",
+    "lint:nofallback": "node scripts/lint-nofallback.mjs"
   },
   "devDependencies": {
+    "@types/node": "^22.10.5",
+    "playwright": "^1.63.0",
     "typescript": "^5.7.3"
   }
 }

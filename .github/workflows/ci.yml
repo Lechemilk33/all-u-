@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run typecheck
+
+      # The engine tests run against no network at all: every fixture is
+      # constructed in the test, so a Wiki outage cannot turn CI red.
+      - run: npm test
+
+      # The rule the project rests on, enforced mechanically.
+      - run: npm run lint:nofallback

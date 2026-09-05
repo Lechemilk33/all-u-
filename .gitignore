@@ -9,3 +9,4 @@ dist/
 # Local scratch: API snapshots, exported candidate sets, suggestion logs.
 data/
 *.local.json
+test/shots/

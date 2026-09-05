@@ -1,0 +1,8 @@
+{
+  "name": "@flip/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "dependencies": { "@flip/core": "*", "@flip/ingest": "*", "@flip/server": "*" }
+}
