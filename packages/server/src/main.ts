@@ -1,7 +1,15 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { DEFAULT_POLLER, Poller } from '@flip/ingest';
-import { startServer } from './server.js';
+import { assertSupportedRuntime } from '@flip/ingest/runtime';
+
+// Checked before anything that touches node:sqlite is loaded. Static imports all
+// resolve before this file's body runs, so everything below is imported
+// dynamically — otherwise an old Node fails inside the import with
+// ERR_UNKNOWN_BUILTIN_MODULE and never reaches this message.
+assertSupportedRuntime();
+
+const { DEFAULT_POLLER, Poller } = await import('@flip/ingest');
+const { startServer } = await import('./server.js');
 
 const here = dirname(fileURLToPath(import.meta.url));
 

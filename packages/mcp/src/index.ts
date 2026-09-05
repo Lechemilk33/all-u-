@@ -16,9 +16,15 @@
  * dependencies at all; it is a stdio process the CLI spawns.
  */
 import { createInterface } from 'node:readline';
-import { Store } from '@flip/ingest';
-import { buildSnapshot, acceptSuggestion, snapshotTsv, positionsView, outcomesView } from '@flip/server/api';
-import { readSuggestions } from '@flip/ingest';
+import { assertSupportedRuntime } from '@flip/ingest/runtime';
+
+// See the note in server/main.ts: the version guard has to precede any import
+// that reaches node:sqlite, so the real modules load dynamically below.
+assertSupportedRuntime();
+
+const { Store, readSuggestions } = await import('@flip/ingest');
+const { buildSnapshot, acceptSuggestion, snapshotTsv, positionsView, outcomesView } =
+  await import('@flip/server/api');
 
 const PROTOCOL_VERSION = '2024-11-05';
 

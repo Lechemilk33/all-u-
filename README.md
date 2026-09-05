@@ -7,8 +7,18 @@ filled in with a default.
 
 ## Start here
 
-Needs **Node 22 or newer** (`node --version`) and git. Nothing else — there are
-no runtime dependencies, no database to install, no API keys.
+Needs **Node 22.5 or newer** and git. Nothing else — no runtime dependencies, no
+database to install, no API keys.
+
+```bash
+node --version    # must be v22.5.0 or higher
+```
+
+Node is installed per machine, not per project, so having other projects working
+does not mean the version is new enough — storage is `node:sqlite`, which is
+built into Node from 22.5 and is the reason there is no database to install. On
+an older Node the app stops with a message telling you so. `nvm install 22 &&
+nvm use 22` if you need it.
 
 ```bash
 git clone -b claude/osrs-flip-finder-data-dwowmt https://github.com/Lechemilk33/all-u-.git flip
@@ -37,6 +47,22 @@ highest-volume items so the anomaly signal works from day one.
 Leave the server running. It polls `/latest` every 45s and writes one row per
 reported trade, so history accumulates for as long as it is up. Stop it with
 Ctrl-C; nothing is lost.
+
+### Where to put it
+
+Clone it as its **own folder**, not inside an existing project. It is a
+self-contained server with its own npm workspace root, its own `tsconfig.json`
+project references, and root-level `build`/`start` scripts — dropped inside
+another repo, those collide with the host's equivalents and npm hoists
+dependencies in ways neither project expects.
+
+It does not need to live inside anything. It serves a local web UI and writes a
+SQLite file next to itself; nothing else in your setup has to know it exists.
+
+If you do want it inside a repo you already have, put it in a subdirectory and
+leave it out of the parent's `workspaces` — then run every command from inside
+that subdirectory. It has its own `package.json` and lockfile, so that works,
+but the sibling folder is simpler and nothing is gained by nesting it.
 
 ### What works without the game client
 

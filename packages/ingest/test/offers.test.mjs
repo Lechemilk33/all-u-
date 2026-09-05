@@ -5,7 +5,30 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   Store, parseOfferEvent, writeOfferEvent, currentPositions, fillStatistics,
+  nodeVersionSupported, unsupportedNodeMessage,
 } from '../dist/index.js';
+
+test('the Node version guard accepts only runtimes that have node:sqlite', () => {
+  // node:sqlite landed in 22.5. Below that the failure is an import-time
+  // ERR_UNKNOWN_BUILTIN_MODULE that never mentions the version.
+  for (const v of ['v22.5.0', 'v22.22.2', 'v23.0.0', 'v24.1.0', '22.5.0']) {
+    assert.equal(nodeVersionSupported(v), true, v);
+  }
+  for (const v of ['v18.20.4', 'v20.11.0', 'v22.4.1', 'v22.0.0', 'garbage', '']) {
+    assert.equal(nodeVersionSupported(v), false, v);
+  }
+});
+
+test('the unsupported-Node message names the version and the fix', () => {
+  const msg = unsupportedNodeMessage('v20.11.0');
+  assert.match(msg, /v20\.11\.0/);
+  assert.match(msg, /nvm install 22/);
+  assert.match(msg, /node:sqlite/);
+});
+
+test('this runtime satisfies its own guard', () => {
+  assert.equal(nodeVersionSupported(process.version), true, process.version);
+});
 
 const freshStore = () => new Store(join(mkdtempSync(join(tmpdir(), 'flip-')), 'test.db'));
 
