@@ -111,6 +111,20 @@ export class Store {
       CREATE INDEX IF NOT EXISTS ix_offer_events_slot ON ge_offer_events (slot, observed_at);
       CREATE INDEX IF NOT EXISTS ix_offer_events_item ON ge_offer_events (item_id, observed_at);
 
+      -- An order you have staged in the finder, waiting to be entered in game.
+      --
+      -- The plugin reads this to prefill the Grand Exchange search box and price
+      -- input. Only one is live at a time; staging a new one supersedes it.
+      CREATE TABLE IF NOT EXISTS staged_order (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        item_id INTEGER NOT NULL, item_name TEXT NOT NULL, side TEXT NOT NULL CHECK (side IN ('buy','sell')),
+        price INTEGER NOT NULL, quantity INTEGER NOT NULL,
+        -- The spread this price was validated against, kept so the plugin can
+        -- refuse a stale prefill rather than typing a price the market left behind.
+        spread_low INTEGER NOT NULL, spread_high INTEGER NOT NULL,
+        staged_at INTEGER NOT NULL
+      );
+
       CREATE TABLE IF NOT EXISTS poll_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT, endpoint TEXT NOT NULL, fetched_at INTEGER NOT NULL,
         rows_seen INTEGER NOT NULL, rows_written INTEGER NOT NULL, ok INTEGER NOT NULL, error TEXT

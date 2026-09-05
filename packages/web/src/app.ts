@@ -372,16 +372,53 @@ function orderSection(c: Candidate): HTMLElement {
   }
   s.append(box);
 
+  const send = document.createElement('button');
+  send.className = 'btn stage-send';
+  send.textContent = 'Send to client';
+  send.title = 'Stage this order so the plugin prefills the GE search and price';
+  send.addEventListener('click', () => { void sendToClient(c, send); });
+  s.append(send);
+
   const note = document.createElement('div');
   note.className = 'note';
   note.textContent =
-    'These values are copied for you to enter yourself. The tool never places, '
-    + 'modifies or cancels an offer: automating a game action is against Jagex’s '
-    + 'third-party client rules, and the RuneLite plugin API deliberately exposes '
-    + 'no way to do it. Reading your cash and offers is permitted, and is what the '
-    + 'plugin does.';
+    'Staging prefills the Grand Exchange search box and price input through the '
+    + 'RuneLite plugin API — the client types it, no mouse or keyboard input is '
+    + 'synthesised. You still click the slot and click Confirm; those are the '
+    + 'actions that reach the server, and they stay yours. External clickers '
+    + 'such as AutoHotkey are a different thing entirely and are not used here.';
   s.append(note);
   return s;
+}
+
+/**
+ * Stage an order for the plugin to prefill.
+ *
+ * The server re-validates the price against the observed spread before storing
+ * it, so a stale tab cannot put a number into the game that no trade supported.
+ * A rejection is shown rather than swallowed.
+ */
+async function sendToClient(c: Candidate, btn: HTMLButtonElement): Promise<void> {
+  btn.classList.add('busy');
+  try {
+    const res = await fetch('/api/stage', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        itemId: c.item.id, side: 'buy', price: c.buy, quantity: c.tradeableUnits,
+      }),
+    });
+    if (res.status === 201) {
+      toast(`staged ${c.item.name} at ${exact(c.buy)} gp`);
+      return;
+    }
+    const body = (await res.json()) as { errors?: string[]; error?: string };
+    toast(body.errors?.[0] ?? body.error ?? `staging failed (${res.status})`);
+  } catch (err) {
+    toast(`staging failed — ${String(err)}`);
+  } finally {
+    btn.classList.remove('busy');
+  }
 }
 
 function metricsSection(c: Candidate): HTMLElement {

@@ -3,8 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 import { Poller, type Store } from '@flip/ingest';
 import {
-  acceptSuggestion, buildSnapshot, outcomesView, parseClientState, positionsView,
-  readSuggestions, recordOffers, snapshotTsv, writeClientState, type Snapshot,
+  acceptSuggestion, buildSnapshot, clearStagedOrder, outcomesView, parseClientState,
+  positionsView, readSuggestions, recordOffers, snapshotTsv, stageOrder, stagedOrder,
+  writeClientState, type Snapshot,
 } from './api.js';
 
 export interface ServerOptions {
@@ -86,11 +87,33 @@ export function startServer(opts: ServerOptions): ReturnType<typeof createServer
       const parsed = parseClientState(body, Math.floor(Date.now() / 1000));
       if ('error' in parsed) return send(res, 400, parsed);
       writeClientState(opts.store, parsed);
-      const newOffers = recordOffers(opts.store, parsed.geOffers, Math.floor(Date.now() / 1000));
+      const at = Math.floor(Date.now() / 1000);
+      const newOffers = recordOffers(opts.store, parsed.geOffers, at);
       // Cash sizing feeds the pipeline, so a fresh report must not be served
       // behind a stale snapshot.
       cache = null;
-      return send(res, 200, { ok: true, cashStack: parsed.cashStack, offerEvents: newOffers });
+      // The staged order rides back on the report the plugin already makes, so
+      // prefill needs no second round trip.
+      return send(res, 200, {
+        ok: true, cashStack: parsed.cashStack, offerEvents: newOffers,
+        staged: stagedOrder(opts.store, at),
+      });
+    }
+
+    if (path === '/api/stage' && req.method === 'POST') {
+      const body = await readJson(req);
+      if (body === null) return send(res, 400, { error: 'invalid JSON body' });
+      const result = stageOrder(opts.store, body, Math.floor(Date.now() / 1000));
+      return result.ok ? send(res, 201, result.staged) : send(res, 422, { errors: result.errors });
+    }
+
+    if (path === '/api/staged' && req.method === 'GET') {
+      return send(res, 200, { staged: stagedOrder(opts.store, Math.floor(Date.now() / 1000)) });
+    }
+
+    if (path === '/api/staged' && req.method === 'DELETE') {
+      clearStagedOrder(opts.store);
+      return send(res, 200, { ok: true });
     }
 
     if (path === '/api/positions' && req.method === 'GET') {

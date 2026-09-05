@@ -5,7 +5,8 @@ import {
 import {
   logSuggestion, readClientState, readSuggestions, writeClientState,
   currentPositions, fillStatistics, parseOfferEvent, writeOfferEvent,
-  scoreOutcomes, hitRate,
+  scoreOutcomes, hitRate, writeStagedOrder, readStagedOrder, clearStagedOrder,
+  STAGED_ORDER_MAX_AGE_S, type StagedOrder,
   type ClientState, type Position, type FillStat, type Outcome, type HitRate,
 } from '@flip/ingest';
 import type { Store } from '@flip/ingest';
@@ -208,4 +209,77 @@ export function outcomesView(store: Store, now: number, windowSeconds: number): 
   return { outcomes, summary: hitRate(outcomes) };
 }
 
-export { readSuggestions, writeClientState, readClientState, currentPositions, fillStatistics };
+/**
+ * Stage an order for the plugin to prefill.
+ *
+ * Validated against the live candidate set exactly as a model suggestion is: the
+ * item must be one the pipeline currently offers, and the price must sit inside
+ * the spread we observed. That is what stops a stale tab or a hand-edited
+ * request from putting a number into the game that no trade ever supported.
+ */
+export function stageOrder(
+  store: Store, body: unknown, now: number,
+): { ok: true; staged: StagedOrder } | { ok: false; errors: readonly string[] } {
+  if (typeof body !== 'object' || body === null) return { ok: false, errors: ['body must be an object'] };
+  const b = body as Record<string, unknown>;
+
+  const itemId = b['itemId'];
+  if (typeof itemId !== 'number' || !Number.isInteger(itemId)) {
+    return { ok: false, errors: ['itemId must be an integer'] };
+  }
+  const side = b['side'];
+  if (side !== 'buy' && side !== 'sell') return { ok: false, errors: ['side must be "buy" or "sell"'] };
+
+  const price = b['price'];
+  const quantity = b['quantity'];
+  if (typeof price !== 'number' || !Number.isInteger(price) || price <= 0) {
+    return { ok: false, errors: ['price must be a positive integer'] };
+  }
+  if (typeof quantity !== 'number' || !Number.isInteger(quantity) || quantity <= 0) {
+    return { ok: false, errors: ['quantity must be a positive integer'] };
+  }
+
+  // Search a generous slice so an order staged against a slightly older view is
+  // not refused merely for having drifted out of the top rows.
+  const offered = buildSnapshot(store, { topN: 400 }, now).candidates;
+  const candidate = offered.find((c) => c.item.id === itemId);
+  if (candidate === undefined) {
+    return { ok: false, errors: [`item ${itemId} is not in the current candidate set`] };
+  }
+  if (price < candidate.quotedBuy || price > candidate.quotedSell) {
+    return {
+      ok: false,
+      errors: [`price ${price} is outside the observed spread ${candidate.quotedBuy}–${candidate.quotedSell}`],
+    };
+  }
+  if (quantity > candidate.tradeableUnits) {
+    return {
+      ok: false,
+      errors: [`quantity ${quantity} exceeds the ${candidate.tradeableUnits} units permitted by ${candidate.limitedBy}`],
+    };
+  }
+
+  const staged: StagedOrder = {
+    itemId,
+    // The name comes from /mapping, never from the request, so the plugin cannot
+    // be made to type a name for an item it did not resolve.
+    itemName: candidate.item.name,
+    side,
+    price,
+    quantity,
+    spreadLow: candidate.quotedBuy,
+    spreadHigh: candidate.quotedSell,
+    stagedAt: now,
+  };
+  writeStagedOrder(store, staged);
+  return { ok: true, staged };
+}
+
+export function stagedOrder(store: Store, now: number): StagedOrder | null {
+  return readStagedOrder(store, now, STAGED_ORDER_MAX_AGE_S);
+}
+
+export {
+  readSuggestions, writeClientState, readClientState, currentPositions, fillStatistics,
+  clearStagedOrder, STAGED_ORDER_MAX_AGE_S,
+};

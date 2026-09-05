@@ -68,7 +68,12 @@ await page.waitForSelector('#drawer:not([hidden])');
 const drawer = await page.locator('#d-body').textContent();
 check('drawer shows staging values', (drawer ?? '').includes('Search for'), '');
 check('drawer shows provenance', (drawer ?? '').includes('/latest'), '');
-check('drawer names the rules honestly', (drawer ?? '').includes('never places'), '');
+// The drawer must state the boundary it actually operates within: it types,
+// it does not trade, and confirming stays the user's action.
+check('drawer names the boundary honestly',
+      (drawer ?? '').includes('synthesised') && (drawer ?? '').includes('stay yours'),
+      `("${(drawer ?? '').slice(0, 80)}")`);
+check('drawer offers staging to the client', (drawer ?? '').includes('Send to client'), '');
 await page.screenshot({ path: 'test/shots/detail.png' });
 
 // Light theme renders too.

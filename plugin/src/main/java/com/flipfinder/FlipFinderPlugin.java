@@ -2,6 +2,7 @@ package com.flipfinder;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -24,6 +25,7 @@ import net.runelite.api.GrandExchangeOfferState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
+import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -65,8 +67,16 @@ public class FlipFinderPlugin extends Plugin
 	@Inject private ClientThread clientThread;
 	@Inject private FlipFinderConfig config;
 	@Inject private ScheduledExecutorService executor;
+	@Inject private GeAutofill autofill;
 
 	private final Gson gson = new Gson();
+
+	/**
+	 * The order currently staged in the finder, refreshed on every report.
+	 * Volatile because it is written on the executor and read on the client
+	 * thread. Null means nothing is staged, and nothing will be prefilled.
+	 */
+	private volatile StagedOrder staged;
 
 	/**
 	 * Latest known state per slot, updated from the event and read by the
@@ -100,6 +110,8 @@ public class FlipFinderPlugin extends Plugin
 			task = null;
 		}
 		offers.clear();
+		staged = null;
+		autofill.reset();
 	}
 
 	/**
@@ -232,8 +244,61 @@ public class FlipFinderPlugin extends Plugin
 		{
 			os.write(body);
 		}
-		conn.getResponseCode();
+
+		// The staged order rides back on the report we already make, so prefill
+		// costs no extra round trip.
+		if (conn.getResponseCode() == 200)
+		{
+			try (InputStreamReader reader = new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))
+			{
+				StageResponse parsed = gson.fromJson(reader, StageResponse.class);
+				staged = parsed == null ? null : parsed.staged;
+			}
+			catch (Exception e)
+			{
+				// A response we cannot parse means we simply have nothing staged;
+				// it must never take down the reporting loop.
+				staged = null;
+			}
+		}
 		conn.disconnect();
+	}
+
+	/** Shape of the /api/client-state response. Only the staged order is used. */
+	private static final class StageResponse
+	{
+		StagedOrder staged;
+	}
+
+	/**
+	 * Prefill the Grand Exchange inputs from the staged order, if one is live and
+	 * the user has opted in.
+	 *
+	 * This runs on ClientTick because the search box and price input only exist
+	 * for the moments they are open — there is no event that fires exactly then,
+	 * and every call is a cheap null check when they are not.
+	 */
+	@Subscribe
+	public void onClientTick(ClientTick event)
+	{
+		if (!config.autofill() || staged == null)
+		{
+			return;
+		}
+		if (client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+
+		StagedOrder order = staged;
+		if (!order.isUsable())
+		{
+			return;
+		}
+
+		final int chatbox = config.chatboxInputComponentId();
+		autofill.fillSearch(order, chatbox, config.meslayerInputVarc(), config.meslayerModeVarc());
+		autofill.fillPrice(order, chatbox, config.meslayerInputVarc());
 	}
 
 	private static boolean isLoopback(URI uri)

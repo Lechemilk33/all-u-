@@ -71,22 +71,39 @@ exist to control per-call API spend, and there is none.
 Exchange offer state to `127.0.0.1`. It refuses to send anything to a
 non-loopback host.
 
-**It reads. It does not act.** That boundary is not a preference — it is where
-the API ends, confirmed three independent ways:
+The line is **no synthesised input, and no new server actions** — which is not
+the same as "no writes at all", and the difference is where the useful part
+lives.
 
-- `GrandExchangeOffer` is six getters and zero setters: `getItemId`, `getPrice`,
-  `getTotalQuantity`, `getQuantitySold`, `getSpent`, `getState`. There is no
-  `placeOffer` and no `cancelOffer` to call.
-- The Third Party Client Guidelines prohibit "any addition of new menu entries
-  which cause actions to be sent to the server". Placing or cancelling an offer
-  is exactly that.
-- Rule 7 of the Rules of RuneScape prohibits "automation tools, macros, bots".
-  Macroing major is a permanent ban, available on a first offence, and Jagex may
-  roll back bank value before applying it.
+**What the plugin may not do:**
 
-There is no official Jagex order API. Anything that placed offers would have to
-synthesise input or manipulate packets, which is the banned category, not a
-grey area.
+- Generate mouse or keyboard input. Jagex, 25 January 2017: *"You may now only
+  use your operating system's official default mouse keys program, unless it is
+  to remap a key to any other button."* AutoHotkey and similar programmable
+  mouse keys were named as previously tolerated and *"This is no longer the
+  case."* An external clicker driving the client is that category exactly.
+- Add menu entries. The Third Party Client Guidelines prohibit *"any addition of
+  new menu entries which cause actions to be sent to the server"*.
+- Place, edit or cancel offers. `GrandExchangeOffer` is six getters and zero
+  setters — `getItemId`, `getPrice`, `getTotalQuantity`, `getQuantitySold`,
+  `getSpent`, `getState`. There is no `placeOffer` to call, and no official
+  Jagex order API exists.
+
+Rule 7 backs all of it: automation tools, macros and bots are prohibited, and
+macroing major is a permanent ban available on a first offence, with a possible
+bank rollback.
+
+**What the plugin may do, and does here:** prefill the Grand Exchange search box
+and price input from a staged order. That sets client variables and re-runs the
+client's own key-listener script through the RuneLite plugin API — no OS-level
+input event is synthesised, and no menu entry is added. `07flip`, listed in the
+official [plugin-hub registry](https://github.com/runelite/plugin-hub/blob/master/plugins/07flip),
+uses exactly this mechanism. You still click the slot and click Confirm; those
+are the server actions and they stay yours.
+
+Prefill is **off by default** (`Prefill staged orders` in the plugin config), and
+the version-sensitive widget and VarClient ids are exposed as settings so a
+RuneLite update turns the feature off rather than breaking it.
 
 What the read side gives you is worth more than it sounds. The plugin subscribes
 to `GrandExchangeOfferChanged`, which fires the moment a fill lands, so the
@@ -99,9 +116,17 @@ finder measures:
 | **Undercut detection** | An offer with fill progress that stops has been outbid. Only your own offer state shows this. |
 | **Realised P&L** | The only honest way to score a suggestion. |
 
-Placing and cancelling stay manual, so the UI stages the exact values with copy
-buttons: item name for the search box, price, quantity, capital, and the sell
-side. You press the keys.
+Placing and cancelling stay manual. The drawer's **Send to client** button
+stages an order for prefill, and every value also has a copy button for when
+prefill is off.
+
+The no-fabrication rule follows the price all the way into the game: staging
+re-validates against the live pipeline, so an item the pipeline is not offering,
+a price outside the observed spread, or a quantity beyond the permitted units is
+refused rather than typed. The item name comes from `/mapping`, never from the
+request. The spread travels with the staged order, so the client refuses a
+prefill whose price the market has since left behind, and a staged order expires
+after 15 minutes rather than being entered into a live offer later.
 
 ## What the numbers mean
 

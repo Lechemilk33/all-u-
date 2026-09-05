@@ -43,4 +43,56 @@ public interface FlipFinderConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "autofill",
+		name = "Prefill staged orders",
+		description = "When you stage an order in the finder, fill the Grand Exchange search box"
+			+ " and price input with it. You still click the slot and click Confirm yourself:"
+			+ " this types, it does not trade. Off by default.",
+		position = 4
+	)
+	default boolean autofill()
+	{
+		return false;
+	}
+
+	// The three ids below are client-version sensitive: they shift between
+	// RuneLite releases. Exposing them as settings means a mismatch after an
+	// update is a one-line fix by the user rather than a rebuild, and the
+	// prefill degrades to doing nothing in the meantime.
+
+	@ConfigItem(
+		keyName = "chatboxInputComponentId",
+		name = "Chatbox input id (advanced)",
+		description = "Component id of the chatbox text input. Change only if prefill stops"
+			+ " working after a RuneLite update.",
+		position = 90
+	)
+	default int chatboxInputComponentId()
+	{
+		return 10616858;
+	}
+
+	@ConfigItem(
+		keyName = "meslayerInputVarc",
+		name = "Input varc (advanced)",
+		description = "VarClient id holding the chatbox input string.",
+		position = 91
+	)
+	default int meslayerInputVarc()
+	{
+		return 335;
+	}
+
+	@ConfigItem(
+		keyName = "meslayerModeVarc",
+		name = "Input mode varc (advanced)",
+		description = "VarClient id holding the chatbox input mode.",
+		position = 92
+	)
+	default int meslayerModeVarc()
+	{
+		return 343;
+	}
 }
