@@ -31,7 +31,10 @@ export interface Snapshot {
   candidates: Candidate[];
   funnel: Record<string, number>;
   rejectionSamples: Array<{ name: string | null; reason: string; detail: string }>;
-  config: { minVolume24h: number; captureRate: number; maxStalenessSeconds: number; cashStack: number | null };
+  config: {
+    minVolume24h: number; captureRate: number; maxStalenessSeconds: number;
+    cashStack: number | null; membership: 'any' | 'f2p' | 'members';
+  };
   client: ClientState | null;
   feed: FeedHealth;
 }

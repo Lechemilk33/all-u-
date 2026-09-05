@@ -21,6 +21,7 @@ function query(): string {
     minVol: $<HTMLSelectElement>('minVol').value,
     maxAge: $<HTMLSelectElement>('maxAge').value,
     capture: $<HTMLSelectElement>('capture').value,
+    members: $<HTMLSelectElement>('members').value,
     top: '60',
     useCash: '1',
   });
@@ -217,6 +218,15 @@ function nameCell(c: Candidate): HTMLTableCellElement {
   sub.className = 'item-sub';
   sub.textContent = `#${c.item.id}`;
   el.append(sub);
+  // Shown regardless of the active filter: when the list is unfiltered this is
+  // the only thing distinguishing a flip you can make from one you cannot.
+  const tier = document.createElement('span');
+  tier.className = c.item.members ? 'tier members' : 'tier f2p';
+  tier.textContent = c.item.members ? 'P2P' : 'F2P';
+  tier.title = c.item.members
+    ? 'Members item — cannot be traded on a free world'
+    : 'Free-to-play item';
+  el.append(tier);
   return el;
 }
 
@@ -280,7 +290,8 @@ function renderFunnel(snap: Snapshot): void {
   el.textContent = '';
   const f = snap.funnel;
   const order = ['input', 'no-mapping-entry', 'no-buy-side', 'no-sell-side', 'no-volume-data',
-                 'stale', 'negative-after-tax', 'below-volume-floor', 'unaffordable', 'survived'];
+                 'members-only', 'f2p-only', 'stale', 'negative-after-tax',
+                 'below-volume-floor', 'unaffordable', 'survived'];
 
   for (const key of order) {
     const n = f[key];
@@ -549,7 +560,7 @@ function toast(msg: string): void {
 
 // ---------------------------------------------------------------- wiring
 
-for (const id of ['minVol', 'maxAge', 'capture']) {
+for (const id of ['minVol', 'maxAge', 'capture', 'members']) {
   $(id).addEventListener('change', () => { void load(); });
 }
 

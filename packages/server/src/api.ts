@@ -9,6 +9,7 @@ import {
   STAGED_ORDER_MAX_AGE_S, type StagedOrder,
   type ClientState, type Position, type FillStat, type Outcome, type HitRate,
 } from '@flip/ingest';
+import type { Membership } from '@flip/core';
 import type { Store } from '@flip/ingest';
 
 /** How old a client report may be before we stop treating its cash stack as current. */
@@ -89,6 +90,12 @@ export interface SnapshotOptions {
   readonly topN?: number;
   /** When true, size trades against the reported cash stack. Ignored if no client is connected. */
   readonly useCash?: boolean;
+  /**
+   * Which items to keep. 'auto' follows the connected client's world type, so a
+   * free world shows only free-to-play items without anyone setting a toggle;
+   * with no client connected 'auto' means no filtering, never a guess.
+   */
+  readonly membership?: Membership | 'auto';
 }
 
 export function buildSnapshot(store: Store, opts: SnapshotOptions, now: number): Snapshot {
@@ -102,6 +109,7 @@ export function buildSnapshot(store: Store, opts: SnapshotOptions, now: number):
     // Cash sizing only applies when a live client actually reported a stack.
     // There is no default bankroll and no way to configure a fictional one.
     cashStack: opts.useCash === true && client !== null ? client.cashStack : null,
+    membership: resolveMembership(opts.membership, client),
   };
 
   const result = runPipeline(
@@ -127,6 +135,19 @@ export function buildSnapshot(store: Store, opts: SnapshotOptions, now: number):
     client,
     feed: feedHealth(store),
   };
+}
+
+/**
+ * 'auto' resolves against the world the client reported. With no client, it
+ * resolves to 'any' — an unfiltered list is honest, whereas assuming a free
+ * account would silently hide most of the market.
+ */
+function resolveMembership(requested: Membership | 'auto' | undefined, client: ClientState | null): Membership {
+  if (requested === undefined || requested === 'auto') {
+    if (client === null) return 'any';
+    return client.member ? 'members' : 'f2p';
+  }
+  return requested;
 }
 
 export function snapshotTsv(snapshot: Snapshot): string {

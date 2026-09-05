@@ -35,6 +35,7 @@ export function startServer(opts: ServerOptions): ReturnType<typeof createServer
       maxStalenessSeconds: numParam(url, 'maxAge'),
       topN: numParam(url, 'top'),
       useCash: url.searchParams.get('useCash') === '1',
+      membership: membershipParam(url),
     };
     const key = JSON.stringify(opt);
     const now = Math.floor(Date.now() / 1000);
@@ -189,6 +190,14 @@ async function readJson(req: IncomingMessage): Promise<unknown | null> {
     chunks.push(c as Buffer);
   }
   try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return null; }
+}
+
+function membershipParam(url: URL): 'any' | 'f2p' | 'members' | 'auto' | undefined {
+  const raw = url.searchParams.get('members');
+  if (raw === null) return undefined;
+  // An unrecognised value is dropped rather than coerced, so a typo shows the
+  // full market instead of silently filtering it.
+  return raw === 'f2p' || raw === 'members' || raw === 'any' || raw === 'auto' ? raw : undefined;
 }
 
 function numParam(url: URL, key: string): number | undefined {

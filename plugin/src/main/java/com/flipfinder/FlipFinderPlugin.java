@@ -25,6 +25,7 @@ import net.runelite.api.GrandExchangeOfferState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
+import net.runelite.api.WorldType;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.client.callback.ClientThread;
@@ -208,6 +209,11 @@ public class FlipFinderPlugin extends Plugin
 			}
 			out.put("cashStack", cash);
 			out.put("world", client.getWorld());
+			// Read the world you are actually on rather than assuming. On a free
+			// world members items cannot be bought at all, so the finder uses this
+			// to stop offering flips you could not make — which only works if the
+			// value is observed.
+			out.put("member", client.getWorldType().contains(WorldType.MEMBERS));
 		});
 
 		if (!out.containsKey("cashStack"))
@@ -218,7 +224,6 @@ public class FlipFinderPlugin extends Plugin
 		Map<String, Object> payload = new HashMap<>(out);
 		payload.put("inventory", inventory);
 		payload.put("geOffers", new ArrayList<>(offers.values()));
-		payload.put("member", true);
 		return payload;
 	}
 

@@ -216,6 +216,55 @@ test('TSV spells out an absent z-score so it cannot read as zero', () => {
   assert.ok(row.endsWith('\tunknown'), `expected trailing "unknown", got: ${row}`);
 });
 
+// ------------------------------------------------------------- membership
+
+const F2P_ITEM = { ...ITEM, id: 1381, name: 'Staff of air', members: false };
+
+test('a free world filter drops members items with a reason', () => {
+  const r = buildCandidate(input(), { ...DEFAULT_FILTER, membership: 'f2p' });
+  assert.equal(r.ok, false);
+  assert.equal(r.rejection.reason, 'members-only');
+  assert.match(r.rejection.detail, /cannot be traded on a free world/);
+});
+
+test('a free world filter keeps free-to-play items', () => {
+  const r = buildCandidate(
+    input({ item: F2P_ITEM, quote: { itemId: 1381, high: 1_600_000, highTime: NOW - 30, low: 1_550_000, lowTime: NOW - 40 } }),
+    { ...DEFAULT_FILTER, membership: 'f2p' },
+  );
+  assert.ok(r.ok, r.ok ? '' : r.rejection.detail);
+  assert.equal(r.candidate.item.members, false);
+});
+
+test('a members filter drops free-to-play items', () => {
+  const r = buildCandidate(
+    input({ item: F2P_ITEM, quote: { itemId: 1381, high: 1_600_000, highTime: NOW - 30, low: 1_550_000, lowTime: NOW - 40 } }),
+    { ...DEFAULT_FILTER, membership: 'members' },
+  );
+  assert.equal(r.ok, false);
+  assert.equal(r.rejection.reason, 'f2p-only');
+});
+
+test('the default keeps both, so nothing is hidden unless asked', () => {
+  assert.equal(DEFAULT_FILTER.membership, 'any');
+  assert.ok(buildCandidate(input(), DEFAULT_FILTER).ok);
+  assert.ok(buildCandidate(
+    input({ item: F2P_ITEM, quote: { itemId: 1381, high: 1_600_000, highTime: NOW - 30, low: 1_550_000, lowTime: NOW - 40 } }),
+    DEFAULT_FILTER,
+  ).ok);
+});
+
+test('membership is judged before pricing, so the reason is the useful one', () => {
+  // A members item that is also stale should report the membership rejection:
+  // on a free world it is not a flip at all, stale or not.
+  const r = buildCandidate(
+    input({ quote: { itemId: 4151, high: 1_600_000, highTime: NOW - 99999, low: 1_550_000, lowTime: NOW - 5 } }),
+    { ...DEFAULT_FILTER, membership: 'f2p' },
+  );
+  assert.equal(r.ok, false);
+  assert.equal(r.rejection.reason, 'members-only');
+});
+
 // -------------------------------------------------------------- validator
 
 const offered = (() => {

@@ -68,6 +68,8 @@ export type RejectionReason =
   | 'negative-after-tax'
   | 'below-volume-floor'
   | 'unaffordable'
+  | 'members-only'
+  | 'f2p-only'
   | 'malformed';
 
 export interface Rejection {
@@ -76,6 +78,15 @@ export interface Rejection {
   readonly reason: RejectionReason;
   readonly detail: string;
 }
+
+/**
+ * Which items you can actually trade.
+ *
+ * On a free world members items cannot be bought at all, so showing them is not
+ * a preference — it is showing you flips you cannot make. The flag comes from
+ * /mapping and the world type comes from the client, so neither is guessed.
+ */
+export type Membership = 'any' | 'f2p' | 'members';
 
 export interface FilterConfig {
   /** Max age, in seconds, of the OLDER leg. See candidate.ts for why. */
@@ -87,6 +98,8 @@ export interface FilterConfig {
   readonly cashStack: number | null;
   /** Drop candidates you could not buy at least this many units of. */
   readonly minUnits: number;
+  /** 'f2p' keeps only free-to-play items; 'members' keeps only members items. */
+  readonly membership: Membership;
 }
 
 export const DEFAULT_FILTER: FilterConfig = {
@@ -95,4 +108,5 @@ export const DEFAULT_FILTER: FilterConfig = {
   captureRate: 0.2,
   cashStack: null,
   minUnits: 1,
+  membership: 'any',
 };

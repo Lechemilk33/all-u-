@@ -55,6 +55,14 @@ const TOOLS: Tool[] = [
           description: 'Size positions against the cash stack the game client reported. '
             + 'Has no effect if no client is connected.',
         },
+        membership: {
+          type: 'string',
+          enum: ['auto', 'any', 'f2p', 'members'],
+          description: 'Which items to consider. "auto" (the default) follows the world the '
+            + 'client reported, so a free world yields only free-to-play items. With no client '
+            + 'connected "auto" means unfiltered — it never assumes an account type. '
+            + 'Members items cannot be bought at all on a free world.',
+        },
       },
     },
     run: (a) => {
@@ -63,6 +71,7 @@ const TOOLS: Tool[] = [
         maxStalenessSeconds: num(a['max_age_seconds']),
         topN: num(a['limit']) ?? 30, // nofallback-ok: page size default
         useCash: a['use_cash_stack'] === true,
+        membership: membershipArg(a['membership']),
       }, now());
 
       const header = [
@@ -70,7 +79,7 @@ const TOOLS: Tool[] = [
         `# ${snap.candidates.length} candidates from ${snap.funnel['input'] ?? 0} items in the feed`,
         `# cash stack: ${snap.client === null ? 'no client connected — affordability not applied' : `${snap.client.cashStack} gp`}`,
         `# feed: ${snap.feed.lastLatestOk === true ? 'healthy' : 'DEGRADED'}, last poll ${snap.feed.lastLatestPoll === null ? 'never' : `${now() - snap.feed.lastLatestPoll}s ago`}`,
-        `# filters: vol>=${snap.config.minVolume24h}, older-leg age<=${snap.config.maxStalenessSeconds}s, capture=${snap.config.captureRate}`,
+        `# filters: vol>=${snap.config.minVolume24h}, older-leg age<=${snap.config.maxStalenessSeconds}s, capture=${snap.config.captureRate}, items=${snap.config.membership}`,
       ].join('\n');
       return `${header}\n${snapshotTsv(snap)}`;
     },
@@ -185,6 +194,10 @@ const TOOLS: Tool[] = [
     run: (a) => JSON.stringify(readSuggestions(store, num(a['limit']) ?? 50) /* nofallback-ok: page size default */, null, 2),
   },
 ];
+
+function membershipArg(v: unknown): 'any' | 'f2p' | 'members' | 'auto' | undefined {
+  return v === 'any' || v === 'f2p' || v === 'members' || v === 'auto' ? v : undefined;
+}
 
 function num(v: unknown): number | undefined {
   return typeof v === 'number' && Number.isFinite(v) ? v : undefined;

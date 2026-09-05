@@ -311,3 +311,10 @@ td.num { font: 12px var(--mono); font-variant-numeric: tabular-nums; }
 
 .stage-send { width: 100%; margin-top: 10px; }
 .stage-send:hover { border-color: var(--good); color: var(--good); }
+
+.tier {
+  font: 9px var(--mono); letter-spacing: .04em; margin-left: 6px;
+  padding: 1px 4px; border-radius: 3px; border: 1px solid var(--line); color: var(--faint);
+}
+.tier.f2p { color: var(--good); border-color: color-mix(in srgb, var(--good) 35%, transparent); }
+.tier.members { color: var(--muted); }

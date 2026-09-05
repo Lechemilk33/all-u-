@@ -60,7 +60,23 @@ const zNums = await page.locator('.z-normal, .z-wide, .z-extreme').count();
 check('z-scores render as number or explicit unknown', unknowns + zNums === rows,
       `(${zNums} numeric + ${unknowns} unknown vs ${rows} rows)`);
 
+// Every row must declare which game tier it belongs to: with the filter off,
+// that badge is the only thing separating a flip you can make from one you cannot.
+const tiers = await page.locator('.tier').count();
+check('every row declares F2P or P2P', tiers === rows, `(${tiers} badges vs ${rows} rows)`);
+
 await page.screenshot({ path: 'test/shots/grid.png' });
+
+// Free-to-play filter: the surviving set must contain no members items at all.
+await page.selectOption('#members', 'f2p');
+await page.waitForTimeout(900);
+const p2pShown = await page.locator('.tier.members').count();
+const f2pShown = await page.locator('.tier.f2p').count();
+check('free-to-play filter excludes every members item', p2pShown === 0, `(${p2pShown} P2P rows remained)`);
+check('free-to-play filter still returns rows', f2pShown > 0, `(${f2pShown})`);
+await page.screenshot({ path: 'test/shots/f2p.png' });
+await page.selectOption('#members', 'auto');
+await page.waitForTimeout(900);
 
 // Drawer
 await page.locator('#rows tr').first().click();

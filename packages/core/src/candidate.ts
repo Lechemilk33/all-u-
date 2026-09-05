@@ -42,6 +42,15 @@ export function buildCandidate(input: BuildInput, cfg: FilterConfig): BuildResul
   if (quote.high === null || quote.highTime === null) return reject('no-buy-side', 'no instant-buy price has been reported');
   if (volume24h === undefined) return reject('no-volume-data', `item ${id} is absent from /volumes`);
 
+  // Membership is checked before any pricing work: a members item on a free
+  // world is not a flip with a caveat, it is not a flip.
+  if (cfg.membership === 'f2p' && item.members) {
+    return reject('members-only', `${item.name} is members-only and cannot be traded on a free world`);
+  }
+  if (cfg.membership === 'members' && !item.members) {
+    return reject('f2p-only', `${item.name} is a free-to-play item`);
+  }
+
   const buyAgeSeconds = now - quote.lowTime;
   const sellAgeSeconds = now - quote.highTime;
 

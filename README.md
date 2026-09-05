@@ -105,6 +105,25 @@ Prefill is **off by default** (`Prefill staged orders` in the plugin config), an
 the version-sensitive widget and VarClient ids are exposed as settings so a
 RuneLite update turns the feature off rather than breaking it.
 
+**One caveat, stated plainly.** RuneLite's
+[Rejected or Rolled Back Features](https://github.com/runelite/runelite/wiki/Rejected-or-Rolled-Back-Features)
+list includes: *"Plugins which programmatically insert text into the user's
+chatbox input for any reason (pasting messages, shorthand expansion, etc.). This
+is considered to be autotyping."* The Grand Exchange search and price inputs use
+that same chatbox widget, so prefill uses the same mechanism the rule names —
+though every example it gives is a chat-message case, and a hub-listed plugin
+does it for GE inputs. That is genuine ambiguity rather than settled ground.
+It is why the feature ships off, and why nothing else in this project depends on
+it: turn it on if you judge the reading reasonable, and everything else works
+identically without it.
+
+**What is not ambiguous** is confirming or cancelling an offer. Those send
+actions to the server, which the client guidelines prohibit adding new ways to
+do. `07flip` — the most permissive flipping plugin that has passed hub review —
+*highlights* the Confirm button and does not click it. That is the clearest
+available signal about where the reviewed line sits, and this project sits on
+the same side of it.
+
 What the read side gives you is worth more than it sounds. The plugin subscribes
 to `GrandExchangeOfferChanged`, which fires the moment a fill lands, so the
 finder measures:
@@ -147,6 +166,14 @@ one. Both leg ages are always shown separately.
 last instant-sell; a flip provides liquidity on both legs, and every public flip
 site queues at those same two numbers. Ranking uses `low+1` / `high-1`. The
 quoted spread stays visible as the optimistic bound.
+
+**Members items are filtered, not annotated.** `/mapping` carries a `members`
+flag and the plugin reports the world type it is actually on, so the `items`
+selector defaults to matching your world: on a free world you see only the 818
+free-to-play items, because members items cannot be bought there at all. With no
+client connected it shows everything rather than assuming an account type. Every
+row carries an F2P/P2P badge regardless, so an unfiltered list still tells you
+which flips you can make.
 
 **Position size is the tightest real constraint.** `net × buy_limit` is the
 standard way to build a finder that recommends garbage: the buy limit is a
