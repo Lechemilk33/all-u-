@@ -5,15 +5,51 @@ one governing rule: **no number reaches a screen or a model unless it was
 derived from a real observation.** Missing data is rejected with a reason, never
 filled in with a default.
 
-```
+## Start here
+
+Needs **Node 22 or newer** (`node --version`) and git. Nothing else — there are
+no runtime dependencies, no database to install, no API keys.
+
+```bash
+git clone -b claude/osrs-flip-finder-data-dwowmt https://github.com/Lechemilk33/all-u-.git flip
+cd flip
 npm install
 npm run build
-FLIP_CONTACT="you@example.com" npm start        # http://127.0.0.1:8787
-FLIP_CONTACT="you@example.com" npm run backfill # seeds spread baselines (~1 min)
+FLIP_CONTACT="you@example.com" npm start
 ```
 
-`FLIP_CONTACT` is required. The Wiki API returns 403 to generic user agents and
-asks that yours name the project and a way to reach you.
+Open **http://127.0.0.1:8787**. Candidates appear on the first poll, a few
+seconds in.
+
+`FLIP_CONTACT` is required and must be a real address: the Wiki API returns 403
+to generic user agents and asks that yours name the project and a contact.
+
+Then, once, in a second terminal:
+
+```bash
+FLIP_CONTACT="you@example.com" npm run backfill   # ~1 minute
+```
+
+Until that runs, every `spread_z` reads `unknown` — correctly, since there is no
+baseline yet. The backfill seeds ~15 days of hourly history for the 400
+highest-volume items so the anomaly signal works from day one.
+
+Leave the server running. It polls `/latest` every 45s and writes one row per
+reported trade, so history accumulates for as long as it is up. Stop it with
+Ctrl-C; nothing is lost.
+
+### What works without the game client
+
+Everything except the parts that need to see your account: ranking, tax and
+exemptions, the F2P/members filter, staging with copy buttons, and the MCP
+tools for Claude Code. That is most of the value and it works the moment the
+server starts.
+
+Connecting the RuneLite plugin adds cash-stack sizing, live offer tracking,
+measured time-to-fill, and prefill. It needs a RuneLite plugin dev setup
+(`plugin/` is a standard Gradle plugin project — see the
+[RuneLite plugin guide](https://github.com/runelite/plugin-hub/blob/master/README.md)),
+which is a longer job than the five minutes above.
 
 ---
 
@@ -49,17 +85,25 @@ model call — a cron job cannot authenticate as you. The relationship is
 therefore inverted: **the deterministic half runs continuously, and the model
 pulls from it when you sit down to trade.**
 
-`packages/mcp` is a dependency-free stdio MCP server exposing five tools:
+`packages/mcp` is a dependency-free stdio MCP server exposing seven tools:
 `get_candidates`, `get_item_detail`, `get_client_state`, `get_open_positions`,
-`get_outcomes`, `log_suggestion`, `get_suggestion_log`. Register it with Claude
-Code:
+`get_outcomes`, `log_suggestion` and `get_suggestion_log`.
 
-```json
-{ "mcpServers": { "flip": {
-    "command": "node",
-    "args": ["packages/mcp/dist/index.js"],
-    "env": { "FLIP_DB": "data/flip.db" } } } }
+Register it with Claude Code from inside the project directory:
+
+```bash
+claude mcp add flip -- node "$PWD/packages/mcp/dist/index.js"
 ```
+
+It reads `FLIP_DB`, defaulting to `data/flip.db` relative to wherever it is
+launched — so set it explicitly if Claude Code starts elsewhere:
+
+```bash
+claude mcp add flip -e FLIP_DB="$PWD/data/flip.db" -- node "$PWD/packages/mcp/dist/index.js"
+```
+
+Then ask for flips in plain language; the tools do the rest. The MCP server
+reads the same database the web UI does, so both can run at once.
 
 That inversion deletes a whole subsystem. There is no prompt cache, no
 top-30 hash, no "call the model only when the set materially changed" — those
