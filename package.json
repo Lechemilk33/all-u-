@@ -1,28 +1,18 @@
 {
-  "name": "curbcut",
+  "name": "osrs-flip-finder",
   "private": true,
-  "version": "0.1.0",
-  "description": "Curbcut \u2014 see your website the way a plaintiff's lawyer does.",
+  "version": "0.0.0",
+  "description": "Grand Exchange flip finder built on the OSRS Wiki real-time prices feed.",
   "license": "UNLICENSED",
   "type": "module",
-  "workspaces": [
-    "packages/*"
-  ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build:core && npm run build -w @curbcut/scan && npm run content && npm run build:audit && npm run build -w @curbcut/web && node scripts/finalize-build.mjs",
-    "build:core": "npm run build -w @curbcut/core",
-    "content": "node scripts/generate-content.mjs && node scripts/build-bookmarklet.mjs",
-    "dev": "npm run dev -w @curbcut/web",
-    "test": "node --test packages/core/test/*.test.mjs",
-    "typecheck": "tsc -b --pretty packages/core packages/scan packages/cli",
-    "scan": "node packages/cli/bin/curbcut.mjs",
-    "build:audit": "vite build -c packages/web/vite.audit.config.ts"
+    "typecheck": "tsc -b --pretty",
+    "test": "node --test"
   },
   "devDependencies": {
-    "playwright": "^1.62.1",
     "typescript": "^5.7.3"
   }
 }
