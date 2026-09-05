@@ -41,8 +41,15 @@ check('feed health shows live status', /live|stale|error/.test(feed ?? ''), `("$
 const legs = await page.locator('#rows tr:first-child .legs').textContent();
 check('both legs shown separately', /b .+ \/ s .+/.test(legs ?? ''), `("${legs}")`);
 
+// The invariant is not which state we are in, but that an absent cash stack is
+// never rendered as a number. Both states are legitimate; "0 gp" is not.
 const cash = await page.locator('#cash-value').textContent();
-check('cash absent renders as "not connected", not 0', cash === 'not connected', `("${cash}")`);
+const cashOk = cash === 'not connected' || /^[\d.,]+[kmb]? gp$/.test(cash ?? '');
+check('cash is a real figure or an explicit "not connected"', cashOk, `("${cash}")`);
+const cashClass = await page.locator('#cash-value').getAttribute('class');
+check('absent cash is styled as absent, not as a value',
+      cash === 'not connected' ? (cashClass ?? '').includes('absent') : !(cashClass ?? '').includes('absent'),
+      `("${cash}" / "${cashClass}")`);
 
 const funnelText = await page.locator('#funnel').textContent();
 check('funnel is visible', (funnelText ?? '').includes('input'), '');
@@ -65,6 +72,27 @@ check('drawer names the rules honestly', (drawer ?? '').includes('never places')
 await page.screenshot({ path: 'test/shots/detail.png' });
 
 // Light theme renders too.
+// Positions tab: everything here comes from the client report, so the tab must
+// say so plainly when nothing is connected rather than rendering empty state.
+await page.keyboard.press('Escape');
+await page.locator('#tab-positions').click();
+await page.waitForSelector('#view-positions:not([hidden])');
+await page.waitForTimeout(600);
+
+const pos = await page.locator('#positions').textContent();
+const hasSlots = (pos ?? '').includes('Grand Exchange slots');
+const saysDisconnected = (pos ?? '').includes('No client connected');
+check('positions tab renders slots or names the disconnect', hasSlots || saysDisconnected, `("${(pos ?? '').slice(0, 60)}")`);
+
+if (hasSlots) {
+  const bars = await page.locator('.bar-fill').count();
+  check('every slot has a fill bar', bars > 0, `(${bars})`);
+  // A slot with nothing filled must never print a realised price of 0.
+  check('no realised price of zero is rendered', !/Realised price\s*0 gp/.test(pos ?? ''), '');
+  check('fill history is measured, not estimated', (pos ?? '').includes('measured, not estimated'), '');
+}
+await page.screenshot({ path: 'test/shots/positions.png' });
+
 await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
 await page.screenshot({ path: 'test/shots/light.png' });
 

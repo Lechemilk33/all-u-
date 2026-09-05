@@ -17,7 +17,7 @@
  */
 import { createInterface } from 'node:readline';
 import { Store } from '@flip/ingest';
-import { buildSnapshot, acceptSuggestion, snapshotTsv } from '@flip/server/api';
+import { buildSnapshot, acceptSuggestion, snapshotTsv, positionsView, outcomesView } from '@flip/server/api';
 import { readSuggestions } from '@flip/ingest';
 
 const PROTOCOL_VERSION = '2024-11-05';
@@ -113,6 +113,37 @@ const TOOLS: Tool[] = [
       }
       return JSON.stringify(snap.client, null, 2);
     },
+  },
+  {
+    name: 'get_open_positions',
+    description:
+      'Your live Grand Exchange slots as the game client reported them: item, side, '
+      + 'offer price, fill progress, coins actually moved, and how long each has been open. '
+      + 'An offer with no fill progress for a long time has most likely been undercut. '
+      + 'Also returns your measured time-to-fill history per item, which is the one signal '
+      + 'the public price feed cannot provide. Returns "no client connected" when the '
+      + 'RuneLite plugin is not reporting — in that case say so rather than assuming a position.',
+    inputSchema: { type: 'object', properties: {} },
+    run: () => {
+      const v = positionsView(store, now());
+      if (!v.connected && v.positions.length === 0) {
+        return 'no client connected — no offer state is available';
+      }
+      return JSON.stringify(v, null, 2);
+    },
+  },
+  {
+    name: 'get_outcomes',
+    description:
+      'How past suggestions actually turned out, scored against stored price ticks over '
+      + 'the window following each call, plus any real fills from your offer log. '
+      + 'A hit rate of null means not enough has been scored yet — it does not mean zero.',
+    inputSchema: {
+      type: 'object',
+      properties: { window_seconds: { type: 'number', description: 'Scoring window. Default 14400 (4h).' } },
+    },
+    // nofallback-ok: scoring window default, not market data
+    run: (a) => JSON.stringify(outcomesView(store, now(), num(a['window_seconds']) ?? 14400), null, 2),
   },
   {
     name: 'log_suggestion',

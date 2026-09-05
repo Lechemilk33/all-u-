@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -19,10 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.GrandExchangeOffer;
+import net.runelite.api.GrandExchangeOfferState;
 import net.runelite.api.InventoryID;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
+import net.runelite.api.events.GrandExchangeOfferChanged;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
@@ -30,21 +35,26 @@ import net.runelite.client.plugins.PluginDescriptor;
  * Reports read-only account state to a flip finder running on this machine.
  *
  * Scope, deliberately: this plugin reads. It reports the coin stack, inventory
- * contents and open Grand Exchange offers, and it does nothing else. It does not
+ * contents and Grand Exchange offer state, and it does nothing else. It does not
  * place, edit, collect or cancel an offer, it does not click, and it does not
- * type — automating a game action would breach Jagex's third-party client rules,
- * and the RuneLite plugin API exposes no way to synthesise the input that would
- * be required. The finder's job is to hand you exact numbers; entering them is
- * yours.
+ * type.
  *
- * Account state never leaves the machine: the endpoint is validated as a
- * loopback address on every send, so a mistyped or edited config cannot post
- * your cash stack to a remote host.
+ * That boundary is not a preference, it is where the API ends. Jagex's
+ * third-party client guidelines prohibit "any addition of new menu entries which
+ * cause actions to be sent to the server", and Rule 7 of the Rules of RuneScape
+ * prohibits automation tools outright — macroing major is a permanent ban,
+ * available on a first offence. Accordingly RuneLite's GrandExchangeOffer
+ * exposes six getters and no setters: there is no placeOffer and no cancelOffer
+ * to call. Watching, by contrast, is exactly what the plugin API is for.
+ *
+ * Account state never leaves the machine: the endpoint is validated as loopback
+ * on every send, so a mistyped or edited config cannot post your cash stack to a
+ * remote host.
  */
 @Slf4j
 @PluginDescriptor(
 	name = "Flip Finder",
-	description = "Reports cash, inventory and GE offers to a local flip finder. Read-only.",
+	description = "Reports cash, inventory and GE offer progress to a local flip finder. Read-only.",
 	tags = {"grand", "exchange", "flipping", "merching", "prices"}
 )
 public class FlipFinderPlugin extends Plugin
@@ -52,10 +62,19 @@ public class FlipFinderPlugin extends Plugin
 	private static final int COINS_ITEM_ID = 995;
 
 	@Inject private Client client;
+	@Inject private ClientThread clientThread;
 	@Inject private FlipFinderConfig config;
 	@Inject private ScheduledExecutorService executor;
 
 	private final Gson gson = new Gson();
+
+	/**
+	 * Latest known state per slot, updated from the event and read by the
+	 * reporter. Concurrent because the event arrives on the client thread and the
+	 * report is built on the executor — the HTTP call must never block the game.
+	 */
+	private final Map<Integer, Map<String, Object>> offers = new ConcurrentHashMap<>();
+
 	private ScheduledFuture<?> task;
 
 	@Provides
@@ -80,6 +99,46 @@ public class FlipFinderPlugin extends Plugin
 			task.cancel(true);
 			task = null;
 		}
+		offers.clear();
+	}
+
+	/**
+	 * Fires whenever the server sends updated offer information, which is the
+	 * moment a fill lands. Reporting from here rather than only on the timer is
+	 * what makes time-to-fill measurable to the second instead of to the polling
+	 * interval.
+	 *
+	 * On login this fires once per slot with state EMPTY, which is how the finder
+	 * learns that a slot was cleared while the plugin was not watching.
+	 */
+	@Subscribe
+	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged event)
+	{
+		GrandExchangeOffer offer = event.getOffer();
+		if (offer == null)
+		{
+			return;
+		}
+
+		Map<String, Object> e = new HashMap<>();
+		e.put("slot", event.getSlot());
+		e.put("itemId", offer.getItemId());
+		e.put("state", stateName(offer.getState()));
+		e.put("price", offer.getPrice());
+		e.put("totalQuantity", offer.getTotalQuantity());
+		e.put("quantitySold", offer.getQuantitySold());
+		// A buy offer can fill below the price you asked, so this is the true cost
+		// basis and getPrice() is only the ask.
+		e.put("spent", offer.getSpent());
+		offers.put(event.getSlot(), e);
+
+		// Push straight away; a fill is the event worth being timely about.
+		executor.execute(this::report);
+	}
+
+	private static String stateName(GrandExchangeOfferState state)
+	{
+		return state == null ? "EMPTY" : state.name();
 	}
 
 	private void report()
@@ -106,17 +165,15 @@ public class FlipFinderPlugin extends Plugin
 	}
 
 	/**
-	 * Reads state on the client thread. Item containers must not be touched from
-	 * the scheduler thread, so the read is marshalled and the result copied out
-	 * before any network work happens.
+	 * Reads inventory on the client thread — item containers must not be touched
+	 * from the scheduler — and copies the result out before any network work.
 	 */
 	private Map<String, Object> snapshot()
 	{
-		final Map<String, Object> out = new HashMap<>();
+		final Map<String, Object> out = new ConcurrentHashMap<>();
 		final List<Map<String, Object>> inventory = new ArrayList<>();
-		final List<Map<String, Object>> offers = new ArrayList<>();
 
-		clientThreadRun(() ->
+		clientThread.invoke(() ->
 		{
 			int cash = 0;
 			ItemContainer inv = client.getItemContainer(InventoryID.INVENTORY);
@@ -138,28 +195,6 @@ public class FlipFinderPlugin extends Plugin
 				}
 			}
 			out.put("cashStack", cash);
-
-			GrandExchangeOffer[] geOffers = client.getGrandExchangeOffers();
-			if (geOffers != null)
-			{
-				for (int slot = 0; slot < geOffers.length; slot++)
-				{
-					GrandExchangeOffer offer = geOffers[slot];
-					if (offer == null || offer.getItemId() <= 0)
-					{
-						continue;
-					}
-					Map<String, Object> e = new HashMap<>();
-					e.put("slot", slot);
-					e.put("itemId", offer.getItemId());
-					e.put("state", String.valueOf(offer.getState()));
-					e.put("price", offer.getPrice());
-					e.put("totalQuantity", offer.getTotalQuantity());
-					e.put("quantitySold", offer.getQuantitySold());
-					offers.add(e);
-				}
-			}
-
 			out.put("world", client.getWorld());
 		});
 
@@ -167,19 +202,12 @@ public class FlipFinderPlugin extends Plugin
 		{
 			return null;
 		}
-		out.put("inventory", inventory);
-		out.put("geOffers", offers);
-		out.put("member", true);
-		return out;
-	}
 
-	private void clientThreadRun(Runnable r)
-	{
-		// RuneLite injects a ClientThread for this; calling it directly keeps the
-		// dependency surface of this class small and the ordering explicit.
-		net.runelite.client.callback.ClientThread thread = injector.getInstance(
-			net.runelite.client.callback.ClientThread.class);
-		thread.invoke(r);
+		Map<String, Object> payload = new HashMap<>(out);
+		payload.put("inventory", inventory);
+		payload.put("geOffers", new ArrayList<>(offers.values()));
+		payload.put("member", true);
+		return payload;
 	}
 
 	private void post(Map<String, Object> payload) throws Exception

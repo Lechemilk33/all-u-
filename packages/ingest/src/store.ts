@@ -87,6 +87,30 @@ export class Store {
         outcome_checked_at INTEGER, outcome_buy INTEGER, outcome_sell INTEGER, outcome_net INTEGER
       );
 
+      -- Every Grand Exchange offer state transition the client reported.
+      --
+      -- Append-only, and the only record of what YOUR offers actually did. The
+      -- price feed can tell you what the market traded at; only this can tell
+      -- you whether your offer at that price ever filled, and how long it took.
+      -- That makes time-to-fill the one metric here that no public flip site
+      -- has, because computing it requires your own order history.
+      CREATE TABLE IF NOT EXISTS ge_offer_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slot INTEGER NOT NULL,
+        item_id INTEGER NOT NULL,
+        state TEXT NOT NULL,
+        price INTEGER NOT NULL,
+        total_quantity INTEGER NOT NULL,
+        quantity_sold INTEGER NOT NULL,
+        -- Coins actually moved. A buy offer can fill BELOW your offer price, so
+        -- spent/quantity_sold is the true cost basis and price is only what you
+        -- asked for. Realised P&L uses the former.
+        spent INTEGER NOT NULL,
+        observed_at INTEGER NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS ix_offer_events_slot ON ge_offer_events (slot, observed_at);
+      CREATE INDEX IF NOT EXISTS ix_offer_events_item ON ge_offer_events (item_id, observed_at);
+
       CREATE TABLE IF NOT EXISTS poll_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT, endpoint TEXT NOT NULL, fetched_at INTEGER NOT NULL,
         rows_seen INTEGER NOT NULL, rows_written INTEGER NOT NULL, ok INTEGER NOT NULL, error TEXT

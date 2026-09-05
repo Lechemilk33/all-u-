@@ -50,8 +50,9 @@ therefore inverted: **the deterministic half runs continuously, and the model
 pulls from it when you sit down to trade.**
 
 `packages/mcp` is a dependency-free stdio MCP server exposing five tools:
-`get_candidates`, `get_item_detail`, `get_client_state`, `log_suggestion`,
-`get_suggestion_log`. Register it with Claude Code:
+`get_candidates`, `get_item_detail`, `get_client_state`, `get_open_positions`,
+`get_outcomes`, `log_suggestion`, `get_suggestion_log`. Register it with Claude
+Code:
 
 ```json
 { "mcpServers": { "flip": {
@@ -64,22 +65,43 @@ That inversion deletes a whole subsystem. There is no prompt cache, no
 top-30 hash, no "call the model only when the set materially changed" — those
 exist to control per-call API spend, and there is none.
 
-## Reading your client, and what this will not do
+## Order tracking, and where the line is
 
-`plugin/` is a RuneLite plugin that reports your coin stack, inventory and open
-GE offers to `127.0.0.1`, so position sizing is bounded by money you actually
-have. It refuses to send anything to a non-loopback host.
+`plugin/` is a RuneLite plugin that reports your coin stack, inventory and Grand
+Exchange offer state to `127.0.0.1`. It refuses to send anything to a
+non-loopback host.
 
-It **reads only**. It does not place, edit, collect or cancel an offer.
-Automating a game action is against Jagex's third-party client rules, and the
-RuneLite plugin API deliberately exposes no way to synthesise the input that
-would be needed — plugins doing so are refused by the Plugin Hub. The
-"one keypress, one action" allowance covers input *you* perform inside the
-official client, not an external tool issuing the action.
+**It reads. It does not act.** That boundary is not a preference — it is where
+the API ends, confirmed three independent ways:
 
-So the tool does everything up to the trade: exact item name for the search box,
-exact price, exact quantity, exact capital, each with a copy button. You press
-the keys.
+- `GrandExchangeOffer` is six getters and zero setters: `getItemId`, `getPrice`,
+  `getTotalQuantity`, `getQuantitySold`, `getSpent`, `getState`. There is no
+  `placeOffer` and no `cancelOffer` to call.
+- The Third Party Client Guidelines prohibit "any addition of new menu entries
+  which cause actions to be sent to the server". Placing or cancelling an offer
+  is exactly that.
+- Rule 7 of the Rules of RuneScape prohibits "automation tools, macros, bots".
+  Macroing major is a permanent ban, available on a first offence, and Jagex may
+  roll back bank value before applying it.
+
+There is no official Jagex order API. Anything that placed offers would have to
+synthesise input or manipulate packets, which is the banned category, not a
+grey area.
+
+What the read side gives you is worth more than it sounds. The plugin subscribes
+to `GrandExchangeOfferChanged`, which fires the moment a fill lands, so the
+finder measures:
+
+| Signal | Why it isn't in the price feed |
+|---|---|
+| **Time to fill**, per item and side | Needs *your* order history, not the shared feed. No public flip site has it. |
+| **True cost basis** | `getSpent() / quantitySold`. A buy can fill below your ask, so the ask is not what you paid. |
+| **Undercut detection** | An offer with fill progress that stops has been outbid. Only your own offer state shows this. |
+| **Realised P&L** | The only honest way to score a suggestion. |
+
+Placing and cancelling stay manual, so the UI stages the exact values with copy
+buttons: item name for the search box, price, quantity, capital, and the sell
+side. You press the keys.
 
 ## What the numbers mean
 
@@ -121,7 +143,7 @@ capture, cash ÷ price)`, and the table names which one bound.
 
 ```
 packages/core     tax, metrics, filters, scoring, provenance, validator  (no deps)
-packages/ingest   Wiki client, SQLite store, poller, backfill            (no deps)
+packages/ingest   Wiki client, store, poller, backfill, order tracking   (no deps)
 packages/server   HTTP API + static host                                 (no deps)
 packages/web      the interface — vanilla TS, native ES modules          (no deps)
 packages/mcp      stdio MCP server for Claude Code                       (no deps)
@@ -148,6 +170,15 @@ npm run lint:nofallback  # fails on any numeric ?? / || fallback
 npm run verify           # re-derives every claim against a live API fetch
 node test/ui.mjs         # browser smoke test (server must be running)
 ```
+
+`scripts/simulate-client.mjs` posts the same payloads the plugin posts, so the
+positions UI can be exercised without a game client attached. It takes its item
+ids and prices from the live candidate set rather than inventing them.
+
+Storage is a plain SQLite file at `data/flip.db`, so any language can read it —
+`sqlite3.connect('data/flip.db')` from Python works fine for analysis or
+notebooks. Writes should go through the API so validation and the
+change-only-insert rule are not bypassed.
 
 `npm run verify` is the one to run when you doubt something. It fetches fresh,
 rebuilds the funnel, prints the top rows, and re-derives the top row's

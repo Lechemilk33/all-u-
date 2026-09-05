@@ -15,7 +15,7 @@
     "build": "tsc -b && npm run build:web",
     "build:web": "node scripts/build-web.mjs",
     "typecheck": "tsc -b --pretty",
-    "test": "node --test packages/core/test/*.test.mjs",
+    "test": "node --test packages/*/test/*.test.mjs",
     "start": "node packages/server/dist/main.js",
     "backfill": "node scripts/backfill.mjs",
     "verify": "node scripts/verify-live.mjs",

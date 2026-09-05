@@ -15,6 +15,8 @@ export interface ClientState {
   readonly geOffers: ReadonlyArray<{
     slot: number; itemId: number; state: string;
     price: number; totalQuantity: number; quantitySold: number;
+    /** Coins actually moved. A buy can fill below the asking price. */
+    spent: number;
   }>;
   readonly world: number | null;
   readonly member: boolean;

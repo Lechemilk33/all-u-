@@ -2,7 +2,12 @@ import {
   DEFAULT_FILTER, runPipeline, toTsv, validateSuggestion,
   type Candidate, type FilterConfig, type LatestQuote, type RawSuggestion,
 } from '@flip/core';
-import { logSuggestion, readClientState, readSuggestions, writeClientState, type ClientState } from '@flip/ingest';
+import {
+  logSuggestion, readClientState, readSuggestions, writeClientState,
+  currentPositions, fillStatistics, parseOfferEvent, writeOfferEvent,
+  scoreOutcomes, hitRate,
+  type ClientState, type Position, type FillStat, type Outcome, type HitRate,
+} from '@flip/ingest';
 import type { Store } from '@flip/ingest';
 
 /** How old a client report may be before we stop treating its cash stack as current. */
@@ -160,4 +165,47 @@ export function parseClientState(body: unknown, now: number): ClientState | { er
   };
 }
 
-export { readSuggestions, writeClientState, readClientState };
+/**
+ * Record the offer events carried by a client report.
+ *
+ * The plugin reports on every GrandExchangeOfferChanged as well as on its
+ * timer, so most of these are identical to the previous report for that slot;
+ * writeOfferEvent keeps only transitions. Returns how many were genuinely new.
+ */
+export function recordOffers(store: Store, offers: ClientState['geOffers'], now: number): number {
+  let written = 0;
+  for (const o of offers) {
+    const parsed = parseOfferEvent(o, now);
+    // A malformed offer is skipped rather than stored with defaults; the rest of
+    // the report is still worth keeping.
+    if ('error' in parsed) continue;
+    if (writeOfferEvent(store, parsed)) written++;
+  }
+  return written;
+}
+
+export interface PositionsView {
+  readonly positions: readonly Position[];
+  readonly fills: readonly FillStat[];
+  readonly connected: boolean;
+}
+
+export function positionsView(store: Store, now: number): PositionsView {
+  return {
+    positions: currentPositions(store, now),
+    fills: fillStatistics(store, now - 30 * 24 * 3600),
+    connected: readClientState(store, now, CLIENT_STATE_MAX_AGE_S) !== null,
+  };
+}
+
+export interface OutcomesView {
+  readonly outcomes: readonly Outcome[];
+  readonly summary: HitRate;
+}
+
+export function outcomesView(store: Store, now: number, windowSeconds: number): OutcomesView {
+  const outcomes = scoreOutcomes(store, now, windowSeconds);
+  return { outcomes, summary: hitRate(outcomes) };
+}
+
+export { readSuggestions, writeClientState, readClientState, currentPositions, fillStatistics };

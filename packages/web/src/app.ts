@@ -1,4 +1,5 @@
 import { age, ageClass, clock, exact, gp, pct, zClass } from './format.js';
+import { renderPositions, type OutcomesView, type PositionsView } from './positions.js';
 import type { Candidate, ItemDetail, Snapshot } from './types.js';
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -11,6 +12,7 @@ let snapshot: Snapshot | null = null;
 let selectedId: number | null = null;
 let sortKey: keyof Candidate | 'name' = 'score';
 let sortAsc = false;
+let view: 'candidates' | 'positions' = 'candidates';
 
 // ---------------------------------------------------------------- fetching
 
@@ -31,9 +33,34 @@ async function load(): Promise<void> {
     if (!res.ok) throw new Error(`${res.status}`);
     snapshot = (await res.json()) as Snapshot;
     render();
+    if (view === 'positions') await loadPositions();
   } catch (err) {
     renderFeed(null, String(err));
   }
+}
+
+async function loadPositions(): Promise<void> {
+  // Positions and outcomes are fetched together but degrade independently: a
+  // failure of one leaves the other rendered rather than blanking the tab.
+  const [posRes, outRes] = await Promise.allSettled([
+    fetch('/api/positions'),
+    fetch('/api/outcomes'),
+  ]);
+  if (posRes.status !== 'fulfilled' || !posRes.value.ok) return;
+  const positions = (await posRes.value.json()) as PositionsView;
+  const outcomes = outRes.status === 'fulfilled' && outRes.value.ok
+    ? ((await outRes.value.json()) as OutcomesView)
+    : null;
+  renderPositions($('positions'), positions, outcomes);
+}
+
+function showView(next: 'candidates' | 'positions'): void {
+  view = next;
+  $('view-candidates').hidden = next !== 'candidates';
+  $('view-positions').hidden = next !== 'positions';
+  $('tab-candidates').classList.toggle('active', next === 'candidates');
+  $('tab-positions').classList.toggle('active', next === 'positions');
+  if (next === 'positions') void loadPositions();
 }
 
 // ---------------------------------------------------------------- rendering
@@ -490,6 +517,8 @@ for (const id of ['minVol', 'maxAge', 'capture']) {
 }
 
 $('refresh').addEventListener('click', () => { void forceRefresh(); });
+$('tab-candidates').addEventListener('click', () => { showView('candidates'); });
+$('tab-positions').addEventListener('click', () => { showView('positions'); });
 $('d-close').addEventListener('click', () => { $('drawer').hidden = true; selectedId = null; render(); });
 
 for (const th of document.querySelectorAll<HTMLElement>('th[data-sort]')) {
@@ -519,6 +548,8 @@ async function forceRefresh(): Promise<void> {
 document.addEventListener('keydown', (e) => {
   if ((e.target as HTMLElement).tagName === 'SELECT') return;
   if (e.key === 'r') void forceRefresh();
+  if (e.key === '1') showView('candidates');
+  if (e.key === '2') showView('positions');
   if (e.key === 'Escape') { $('drawer').hidden = true; selectedId = null; render(); }
 });
 

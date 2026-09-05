@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';
 import { Poller, type Store } from '@flip/ingest';
 import {
-  acceptSuggestion, buildSnapshot, parseClientState, readSuggestions,
-  snapshotTsv, writeClientState, type Snapshot,
+  acceptSuggestion, buildSnapshot, outcomesView, parseClientState, positionsView,
+  readSuggestions, recordOffers, snapshotTsv, writeClientState, type Snapshot,
 } from './api.js';
 
 export interface ServerOptions {
@@ -86,10 +86,20 @@ export function startServer(opts: ServerOptions): ReturnType<typeof createServer
       const parsed = parseClientState(body, Math.floor(Date.now() / 1000));
       if ('error' in parsed) return send(res, 400, parsed);
       writeClientState(opts.store, parsed);
+      const newOffers = recordOffers(opts.store, parsed.geOffers, Math.floor(Date.now() / 1000));
       // Cash sizing feeds the pipeline, so a fresh report must not be served
       // behind a stale snapshot.
       cache = null;
-      return send(res, 200, { ok: true, cashStack: parsed.cashStack });
+      return send(res, 200, { ok: true, cashStack: parsed.cashStack, offerEvents: newOffers });
+    }
+
+    if (path === '/api/positions' && req.method === 'GET') {
+      return send(res, 200, positionsView(opts.store, Math.floor(Date.now() / 1000)));
+    }
+
+    if (path === '/api/outcomes' && req.method === 'GET') {
+      const window = numParam(url, 'window') ?? 4 * 3600; // nofallback-ok: scoring window default
+      return send(res, 200, outcomesView(opts.store, Math.floor(Date.now() / 1000), window));
     }
 
     if (path === '/api/item' && req.method === 'GET') {
